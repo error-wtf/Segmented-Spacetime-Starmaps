@@ -19,6 +19,7 @@ import gradio as gr
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+from pathlib import Path
 
 # Import modules (but don't initialize yet - lazy loading!)
 from star_map_generator import create_sky_map, create_3d_sky_map, create_constellation_map
@@ -42,6 +43,29 @@ _sdss_fetch = None
 
 # Global variable to store last query results for sky map
 last_query_data = None
+
+# Global star database - loaded once at startup
+star_database = None
+
+def load_star_database():
+    """Load 50k star database from CSV."""
+    global star_database
+    
+    if star_database is not None:
+        return star_database
+    
+    database_file = Path(__file__).parent / 'ssz_data' / 'star_database_50k.csv'
+    
+    if database_file.exists():
+        print(f"Loading star database: {database_file}")
+        star_database = pd.read_csv(database_file)
+        print(f"Loaded {len(star_database):,} stars")
+        return star_database
+    else:
+        print("Star database not found, using default universe")
+        from star_map_generator import create_default_universe
+        star_database = create_default_universe()
+        return star_database
 
 # Lazy loading functions
 def get_data_manager():
@@ -371,35 +395,29 @@ def plot_sky_positions(df, title="Sky Positions"):
 
 
 def generate_sky_map():
-    """Generate sky map with GUARANTEED data!"""
+    """Generate sky map with 50k star database!"""
     global last_query_data
     
-    # ALWAYS load default universe as fallback
-    from star_map_generator import create_default_universe
-    
-    # If we have query data, use it, otherwise use default universe
+    # If we have query data, use it
     if last_query_data is not None and not last_query_data.empty:
         try:
             return create_sky_map(last_query_data, f"Sky Map ({len(last_query_data)} objects)")
         except Exception as e:
             print(f"Error creating sky map from query data: {e}")
-            # Fall through to default
     
-    # Default: Famous objects from our universe
-    universe = create_default_universe()
+    # Use 50k star database
+    db = load_star_database()
     return create_sky_map(
-        universe, 
-        title="🌌 Our Universe - Famous Objects (Default View)<br>"
-              "<sub>Query catalogs in 'Multi-Catalog Search' tab for real data!</sub>"
+        db, 
+        title=f"🌌 Sky Map - {len(db):,} Stars (Full Sky)<br>"
+              "<sub>GAIA DR3 data - Query for specific regions in 'Multi-Catalog Search'</sub>"
     )
 
 
 def generate_3d_sky_map():
-    """Generate 3D sky map with GUARANTEED data!"""
+    """Generate 3D sky map with 50k star database!"""
     global last_query_data
-    
-    # ALWAYS have fallback ready
-    from star_map_generator import create_default_universe, create_3d_sky_map
+    from star_map_generator import create_3d_sky_map
     
     # If we have query data, use it
     if last_query_data is not None and not last_query_data.empty:
@@ -407,44 +425,55 @@ def generate_3d_sky_map():
             return create_3d_sky_map(last_query_data, f"3D Sky Map ({len(last_query_data)} objects)")
         except Exception as e:
             print(f"Error creating 3D map from query data: {e}")
-            # Fall through to default
     
-    # Default: Famous objects from our universe
-    universe = create_default_universe()
-    return create_3d_sky_map(universe, "🌌 Our Universe - 3D View (Default)<br><sub>Query catalogs for real data!</sub>")
+    # Use 50k star database
+    db = load_star_database()
+    return create_3d_sky_map(db, f"🌌 3D Sky Map - {len(db):,} Stars<br><sub>GAIA DR3 - Full Sky Coverage</sub>")
 
 
 def generate_constellation_map(ra, dec, fov):
-    """Generate 3D REGION MAP - Like 3D Sky Map but focused on region!"""
+    """Generate constellation map from 50k database!"""
     try:
-        # Use NEW 3D region map
-        use_3d_region = True
+        from star_map_generator import create_3d_sky_map
         
-        if use_3d_region:
-            try:
-                from progressive_sky_map import create_progressive_constellation_map_3d
-                
-                fig, stats = create_progressive_constellation_map_3d(
-                    ra_center=float(ra),
-                    dec_center=float(dec),
-                    fov=float(fov),
-                    catalog_name='gaia',
-                    max_objects=128000,  # MASSIVE DATABASE!
-                    initial_display=2000  # 2K objects for region!
-                )
-                
-                return fig
-                
-            except Exception as e:
-                print(f"3D region map failed: {e}")
-                import traceback
-                traceback.print_exc()
-                # Fallback below
+        # Load database
+        db = load_star_database()
         
-        # Fallback: old 2D method
-        return create_constellation_map(float(ra), float(dec), float(fov))
+        # Filter to region
+        ra_val = float(ra)
+        dec_val = float(dec)
+        fov_val = float(fov)
+        
+        # Simple box filter
+        half_fov = fov_val / 2
+        mask = (
+            (db['ra'] >= ra_val - half_fov) &
+            (db['ra'] <= ra_val + half_fov) &
+            (db['dec'] >= dec_val - half_fov) &
+            (db['dec'] <= dec_val + half_fov)
+        )
+        
+        region_data = db[mask].copy()
+        
+        if len(region_data) == 0:
+            fig = go.Figure()
+            fig.add_annotation(
+                text=f"No stars found in region\nRA={ra_val}°, Dec={dec_val}°, FOV={fov_val}°",
+                xref="paper", yref="paper", x=0.5, y=0.5
+            )
+            return fig
+        
+        # Create 3D map of region
+        return create_3d_sky_map(
+            region_data,
+            f"Sky Region: RA={ra_val:.1f}°, Dec={dec_val:.1f}° (FOV={fov_val}°)<br>"
+            f"<sub>{len(region_data)} stars from {len(db):,} star database</sub>"
+        )
         
     except Exception as e:
+        print(f"Constellation map error: {e}")
+        import traceback
+        traceback.print_exc()
         fig = go.Figure()
         fig.add_annotation(text=f"Error: {e}", xref="paper", yref="paper", x=0.5, y=0.5)
         return fig
