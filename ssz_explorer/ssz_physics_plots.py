@@ -126,20 +126,19 @@ def create_g1_g2_domain_plot():
 # ============================================================================
 
 def create_time_dilation_comparison():
-    """
-    Metric Function A(r) - SSZ vs GR
+    """WISSENSCHAFTLICH KORREKT: Metric Function A(r) - SSZ vs GR
     
-    WICHTIG: A_SSZ(r) ist NICHT singulär bei r → 0!
+    Zeigt die Metrik-Funktion die NICHT singulär ist bei r=0!
     """
-    M = 4.3e6 * M_SUN  # Sgr A*
+    M = 4.3e6 * M_SUN  # Sgr A* Mass
     r_s = r_schwarzschild(M)
     
     r_range = np.logspace(np.log10(0.1*r_s), np.log10(100*r_s), 500)
     r_ratio = r_range / r_s
     
     # Calculate metric functions
-    A_ssz = A_SSZ(r_range, M)
-    A_gr = A_GR(r_range, M)
+    A_ssz = np.array([A_SSZ(r, M) for r in r_range])
+    A_gr = np.array([A_GR(r, M) for r in r_range])
     
     fig = go.Figure()
     
@@ -273,11 +272,11 @@ def create_combined_ssz_analysis():
     r_ratio = r_range / r_s
     
     # Calculate all quantities
-    xi_vals = Xi(r_range, r_s)
-    d_vals = D_SSZ(r_range, r_s)
-    a_ssz_vals = A_SSZ(r_range, M)
-    a_gr_vals = A_GR(r_range, M)
-    tau_ssz = proper_time_factor(r_range, M)
+    xi_vals = np.array([Xi(r, r_s) for r in r_range])
+    d_vals = np.array([D_SSZ(r, r_s) for r in r_range])
+    a_ssz_vals = np.array([A_SSZ(r, M) for r in r_range])
+    a_gr_vals = np.array([A_GR(r, M) for r in r_range])
+    tau_ssz = np.array([proper_time_factor(r, M) for r in r_range])
     tau_gr = np.sqrt(np.abs(a_gr_vals))
     
     # Create 2x2 subplots
