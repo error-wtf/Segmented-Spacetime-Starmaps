@@ -485,18 +485,18 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
                         update_view_btn = gr.Button("🔄 Update View", variant="primary")
                 
                 def generate_3d_centered(distance, h_angle, v_angle):
-                    """Generate 3D map centered on selected object."""
+                    """Generate 3D map centered on selected object - OPTIMIZED."""
                     data = load_star_database()
                     
-                    # Sample for performance
-                    if len(data) > 5000:
+                    # FAST MODE: Only 1000 stars for quick rendering
+                    if len(data) > 1000:
                         import random
-                        indices = sorted(random.sample(range(len(data)), 5000))
+                        indices = sorted(random.sample(range(len(data)), 1000))
                         data_sample = data.iloc[indices].copy()
                     else:
                         data_sample = data.copy()
                     
-                    fig = create_3d_sky_map(data_sample, f"🌌 3D Sky Map - {len(data):,} Stars (showing {len(data_sample):,})")
+                    fig = create_3d_sky_map(data_sample, f"🌌 3D Sky Map - {len(data):,} Total ({len(data_sample):,} shown)")
                     
                     if selected_object is not None:
                         try:
