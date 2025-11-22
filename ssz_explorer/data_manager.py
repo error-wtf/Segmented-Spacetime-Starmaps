@@ -224,12 +224,15 @@ class DataManager:
             if region:
                 ra = region.get('ra', 266.4)
                 dec = region.get('dec', -29.0)
-                radius = region.get('radius', 5.0)
+                radius = region.get('radius')
             else:
                 # Default: Galactic center region
                 ra = 266.4
                 dec = -29.0
-                radius = 5.0  # degrees
+                radius = None
+            
+            if radius is None:
+                radius = 10.0  # degrees
             
             # Query GAIA
             data = fetcher.cone_search(
@@ -725,8 +728,8 @@ def demo():
     
     # Cone search
     print("3. Cone search (Galactic center)...")
-    cone_data = dm.cone_search(ra=266.4, dec=-29.0, radius=5.0, level='preview')
-    print(f"   Found: {len(cone_data)} objects within 5 degrees")
+    cone_data = dm.cone_search(ra=266.4, dec=-29.0, radius=10.0, level='preview')  # INCREASED to 10°
+    print(f"   Found: {len(cone_data)} objects within 10 degrees")
     print()
     
     # Statistics

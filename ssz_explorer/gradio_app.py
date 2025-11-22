@@ -119,7 +119,7 @@ def query_galactic_center(radius):
         stars = dm.cone_search(
             ra=266.4,
             dec=-29.0,
-            radius=float(radius),
+            radius=float(radius) if radius else 10.0,  # INCREASED: Default 10° instead of 5°
             level='preview'
         )
         

@@ -22,6 +22,10 @@ def _add_ssz_parameters(row, columns):
     # SSZ-specific columns
     ssz_cols = {
         # Core SSZ parameters
+        'xi': 'Ξ(r) Segment Density',  # ADDED - Phase A Fix 3
+        'Xi': 'Ξ(r) Segment Density',  # Alternative naming
+        'xi_value': 'Ξ(r) Segment Density',  # Alternative naming
+        'D_ssz': 'D_SSZ Time Dilation',  # ADDED
         'ssz_correction': '🔬 SSZ Correction',
         'ssz_metric': '📐 SSZ Metric',
         'ssz_segment': '📊 SSZ Segment',
