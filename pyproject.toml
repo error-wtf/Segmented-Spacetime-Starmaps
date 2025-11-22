@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssz-starmaps"
+version = "0.2.0"
+description = "Segmented Spacetime Star Map Generator - Validated SSZ Implementation"
+authors = [
+    {name = "Carmen Wrede"},
+    {name = "Lino Casu"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Anti-Capitalist Software License v1.4"}
+
+dependencies = [
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "astropy>=5.3.0",
+    "astroquery>=0.4.6",
+    "scipy>=1.10.0",
+    "pandas>=2.0.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "flake8>=4.0.0",
+]
+
+interactive = [
+    "plotly>=5.17.0",
+    "ipywidgets>=8.1.0",
+    "dash>=2.14.0",
+]
+
+all = [
+    "ssz-starmaps[dev,interactive]",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

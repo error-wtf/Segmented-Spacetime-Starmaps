@@ -1,0 +1,18 @@
+# SSZ StarMaps - Python Dependencies
+# © 2025 Carmen Wrede, Lino Casu
+
+# Core numerical computing
+numpy>=1.21.0
+
+# Visualization
+matplotlib>=3.5.0
+
+# Astronomy packages
+astropy>=5.0.0
+astroquery>=0.4.6
+
+# Optional: for enhanced performance
+# numba>=0.56.0  # Uncomment if you add JIT-compiled functions
+
+# Optional: for 3D visualization
+# plotly>=5.0.0  # Uncomment for interactive 3D plots

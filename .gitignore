@@ -1,0 +1,56 @@
+# SSZ StarMaps - Git Ignore Rules
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+# *.ipynb  # Commented out - we want to include Colab notebook!
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated outputs
+# *.png  # Keep some images for docs
+# *.pdf  # Keep PDFs
+# *.html # Keep HTML outputs
+# *.gif  # Keep GIFs
+
+# But ignore large generated files:
+ssz_exports/*.html
+reports/*.html
+
+# Data files (uncomment to ignore large catalogs)
+# data/
+# *.csv
+# *.fits
+
+# Logs
+*.log
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
