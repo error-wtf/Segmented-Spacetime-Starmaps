@@ -577,6 +577,55 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
     with gr.Tab("🔬 SSZ Physics"):
         gr.Markdown("### Segmented Spacetime Physics Visualizations")
         
+        # Object selector for physics
+        with gr.Row():
+            with gr.Column(scale=2):
+                gr.Markdown("**Select an object to visualize in physics plots:**")
+                
+                physics_search = gr.Textbox(
+                    label="Quick Search",
+                    placeholder="Sag A*, Betelgeuse, M31, or coordinates",
+                    scale=2
+                )
+                physics_search_btn = gr.Button("🔍 Find", size="sm")
+                
+            with gr.Column(scale=3):
+                physics_object_dropdown = gr.Dropdown(
+                    label="Select Object",
+                    choices=[],
+                    interactive=True
+                )
+                physics_select_btn = gr.Button("✅ Select for Physics Plots", variant="primary")
+                
+            with gr.Column(scale=2):
+                physics_object_status = gr.Markdown("**No object selected**")
+        
+        def physics_quick_search(term):
+            results, status = search_object(term)
+            if results:
+                return gr.Dropdown(choices=results, value=results[0][1]), status
+            return gr.Dropdown(choices=[]), status
+        
+        def physics_select_object(idx):
+            if idx is None:
+                return "❌ No object selected"
+            info = select_object(idx)
+            return info
+        
+        physics_search_btn.click(
+            fn=physics_quick_search,
+            inputs=physics_search,
+            outputs=[physics_object_dropdown, physics_object_status]
+        )
+        
+        physics_select_btn.click(
+            fn=physics_select_object,
+            inputs=physics_object_dropdown,
+            outputs=physics_object_status
+        )
+        
+        gr.Markdown("---")
+        
         with gr.Tabs():
             # Sub-Tab: g₁/g₂ Domains
             with gr.Tab("g₁/g₂ Domains"):
@@ -591,32 +640,77 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
                 def plot_domains_with_objects(show_objects):
                     fig = create_g1_g2_domain_plot()
                     
-                    if show_objects and selected_object is not None:
-                        # Add selected object
+                    if show_objects:
+                        # Constants
+                        G = 6.67430e-11
+                        c = 2.99792458e8
+                        M_sun = 1.989e30
+                        PC_TO_M = 3.0857e16
+                        
+                        # Add sample of real objects from database
                         try:
-                            obj = selected_object
+                            db = load_star_database()
                             
-                            # Calculate r/r_s
-                            G = 6.67430e-11
-                            c = 2.99792458e8
-                            M_sun = 1.989e30
-                            PC_TO_M = 3.0857e16
+                            # Sample 100 objects randomly
+                            import random
+                            if len(db) > 100:
+                                indices = random.sample(range(len(db)), 100)
+                                sample = db.iloc[indices]
+                            else:
+                                sample = db
                             
-                            M_kg = obj['mass_msun'] * M_sun
-                            r_s = 2 * G * M_kg / (c**2)
-                            r_m = obj['distance_pc'] * PC_TO_M
-                            r_ratio = r_m / r_s
+                            # Calculate r/r_s for each
+                            r_ratios = []
+                            xi_vals = []
+                            hover_texts = []
                             
-                            fig.add_trace(go.Scatter(
-                                x=[r_ratio],
-                                y=[obj['xi']],
-                                mode='markers',
-                                marker=dict(size=15, color='yellow', symbol='star', line=dict(width=2, color='red')),
-                                name=f'Selected Object (ID: {obj["source_id"]})',
-                                hovertext=f"RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly"
-                            ))
+                            for idx, obj in sample.iterrows():
+                                try:
+                                    M_kg = obj['mass_msun'] * M_sun
+                                    r_s = 2 * G * M_kg / (c**2)
+                                    r_m = obj['distance_pc'] * PC_TO_M
+                                    r_ratio = r_m / r_s
+                                    
+                                    if r_ratio > 0 and r_ratio < 10000:  # Reasonable range
+                                        r_ratios.append(r_ratio)
+                                        xi_vals.append(obj['xi'])
+                                        hover_texts.append(f"ID: {obj['source_id']}<br>Distance: {obj['distance_ly']:.1f} ly")
+                                except:
+                                    pass
+                            
+                            # Add sample objects
+                            if r_ratios:
+                                fig.add_trace(go.Scatter(
+                                    x=r_ratios,
+                                    y=xi_vals,
+                                    mode='markers',
+                                    marker=dict(size=6, color='cyan', opacity=0.5),
+                                    name='Sample Stars (100)',
+                                    hovertext=hover_texts
+                                ))
                         except Exception as e:
-                            print(f"Error adding object to plot: {e}")
+                            print(f"Error adding sample objects: {e}")
+                        
+                        # Add SELECTED object on top
+                        if selected_object is not None:
+                            try:
+                                obj = selected_object
+                                
+                                M_kg = obj['mass_msun'] * M_sun
+                                r_s = 2 * G * M_kg / (c**2)
+                                r_m = obj['distance_pc'] * PC_TO_M
+                                r_ratio = r_m / r_s
+                                
+                                fig.add_trace(go.Scatter(
+                                    x=[r_ratio],
+                                    y=[obj['xi']],
+                                    mode='markers',
+                                    marker=dict(size=20, color='yellow', symbol='star', line=dict(width=3, color='red')),
+                                    name=f'⭐ SELECTED (ID: {obj["source_id"]})',
+                                    hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly"
+                                ))
+                            except Exception as e:
+                                print(f"Error adding selected object: {e}")
                     
                     return fig
                 
