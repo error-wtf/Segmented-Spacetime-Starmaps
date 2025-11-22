@@ -205,8 +205,8 @@ def create_radial_stretch_plot():
     r_ratio = r_range / r_s
     
     # Proper time factors
-    tau_ssz = proper_time_factor(r_range, M)
-    tau_gr = np.sqrt(np.abs(A_GR(r_range, M)))
+    tau_ssz = np.array([proper_time_factor(r, M) for r in r_range])
+    tau_gr = np.array([np.sqrt(np.abs(A_GR(r, M))) for r in r_range])
     
     fig = go.Figure()
     
