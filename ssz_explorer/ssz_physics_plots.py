@@ -76,8 +76,12 @@ def create_g1_g2_domain_plot():
     r_s = r_schwarzschild(M)
     r_s_pc = r_s / PC_TO_M  # Convert to parsec
     
-    # Radius range in parsec: from 10^-6 to 10^2 pc (covers stellar to galactic scales)
-    r_range_pc = np.logspace(-6, 2, 500)
+    # Radius range: Must cover the ACTUAL scales!
+    # r_s for Sgr A* ~ 10^-7 pc, so we need to go MUCH smaller
+    # Range: 10^-9 to 10^4 pc to cover all scales
+    r_min_pc = 1e-9  # Very small scale
+    r_max_pc = 1e4   # Large galactic scale
+    r_range_pc = np.logspace(np.log10(r_min_pc), np.log10(r_max_pc), 500)
     r_range = r_range_pc * PC_TO_M  # Convert to meters for calculations
     r_ratio = r_range / r_s
     
