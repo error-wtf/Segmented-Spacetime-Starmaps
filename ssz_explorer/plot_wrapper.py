@@ -10,17 +10,24 @@ import json
 
 def wrap_for_gradio(fig):
     """
-    Wrap Plotly figure for Gradio display
+    Wrap Plotly figure for Gradio display - CONVERT TO HTML!
     
     Args:
         fig: Plotly figure object
     
     Returns:
-        Figure in format that Gradio can render
+        HTML string that Gradio CAN render
     """
-    # Return figure directly - Gradio should handle it
-    # If this doesn't work, we can return fig.to_json() or fig.to_html()
-    return fig
+    # SOLUTION: Convert to HTML because gr.Plot() has bugs!
+    return fig.to_html(
+        include_plotlyjs='cdn',
+        config={
+            'responsive': True,
+            'displayModeBar': True,
+            'displaylogo': False
+        },
+        div_id='plot-container'
+    )
 
 
 def fig_to_html_string(fig):
