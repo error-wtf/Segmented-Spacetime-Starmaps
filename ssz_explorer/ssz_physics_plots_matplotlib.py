@@ -12,7 +12,6 @@ matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 from pathlib import Path
 import io
-from PIL import Image
 
 # Constants
 G = 6.67430e-11
@@ -73,15 +72,17 @@ def create_domains_plot_png():
     ax.legend(fontsize=12, facecolor='#1a1a2e', edgecolor='white', labelcolor='white')
     ax.tick_params(colors='white')
     
-    # Convert to PIL Image - FIX: Keep buffer open!
+    # Convert to numpy array for Gradio (fixes type="pil" bug!)
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
-    img = Image.open(buf).copy()  # CRITICAL: .copy() to load into memory!
+    from PIL import Image
+    img = Image.open(buf)
+    img_array = np.array(img)  # Convert to numpy!
     plt.close()
     buf.close()
     
-    return img
+    return img_array
 
 
 def create_time_dilation_png():
@@ -123,15 +124,17 @@ def create_time_dilation_png():
     ax.legend(fontsize=12, facecolor='#1a1a2e', edgecolor='white', labelcolor='white')
     ax.tick_params(colors='white')
     
-    # Convert to PIL Image - FIX: Keep buffer open!
+    # Convert to numpy array for Gradio (fixes type="pil" bug!)
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
-    img = Image.open(buf).copy()  # CRITICAL: .copy() to load into memory!
+    from PIL import Image
+    img = Image.open(buf)
+    img_array = np.array(img)  # Convert to numpy!
     plt.close()
     buf.close()
     
-    return img
+    return img_array
 
 
 def create_radial_stretch_png():
