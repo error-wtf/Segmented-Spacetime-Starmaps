@@ -38,6 +38,7 @@ from ssz_physics_plots import (
     create_radial_stretch_plot,
     create_combined_ssz_analysis
 )
+from name_resolver import resolve_name, search_by_name_fuzzy, get_famous_objects_list
 
 # ============================================================================
 # GLOBALE VARIABLEN
@@ -84,7 +85,7 @@ def load_star_database():
 # ============================================================================
 
 def generate_sky_map():
-    """Generate 2D sky map with 50k database."""
+    """Generate 2D sky map with 500k database."""
     global last_query_data
     
     # Use query data if available, otherwise use database
@@ -93,10 +94,26 @@ def generate_sky_map():
     else:
         data = load_star_database()
     
-    return create_sky_map(
-        data,
-        title=f"🌌 Sky Map - {len(data):,} Stars<br><sub>GAIA DR3 Full Sky Coverage</sub>"
+    # Sample for performance if too many
+    if len(data) > 10000:
+        import random
+        indices = sorted(random.sample(range(len(data)), 10000))
+        data_sample = data.iloc[indices].copy()
+        # Store indices for click mapping
+        data_sample['original_index'] = indices
+    else:
+        data_sample = data.copy()
+        data_sample['original_index'] = data_sample.index
+    
+    fig = create_sky_map(
+        data_sample,
+        title=f"🌌 Sky Map - {len(data):,} Stars (showing {len(data_sample):,})<br><sub>GAIA DR3 - Click on star for details</sub>"
     )
+    
+    # Enable click mode
+    fig.update_layout(clickmode='event+select')
+    
+    return fig
 
 
 def generate_3d_sky_map():
@@ -187,13 +204,30 @@ def download_csv():
 # ============================================================================
 
 def search_object(search_term):
-    """Suche nach Objekt in Datenbank."""
+    """Suche nach Objekt in Datenbank - jetzt auch mit Namen!"""
     db = load_star_database()
     
     if not search_term or search_term.strip() == "":
-        return [], "Enter search term (e.g., coordinates or source_id)"
+        return [], "Enter search term (e.g., 'Sag A*', coordinates, or source_id)"
     
     search_term = search_term.strip()
+    
+    # Try name resolution first
+    name_result = resolve_name(search_term)
+    if name_result:
+        # Found by name! Now find in database
+        ra_search = name_result['ra']
+        dec_search = name_result['dec']
+        
+        distances = np.sqrt((db['ra'] - ra_search)**2 + (db['dec'] - dec_search)**2)
+        nearest_idx = np.argmin(distances)
+        
+        obj = db.iloc[nearest_idx]
+        result = [(
+            f"🌟 {name_result['name']} | RA:{obj['ra']:.2f}° Dec:{obj['dec']:.2f}° | {obj['distance_ly']:.1f}ly",
+            int(nearest_idx)
+        )]
+        return result, f"✅ Found: {name_result['name']} ({name_result['type']})"
     
     # Try parsing as coordinates (RA, Dec)
     if ',' in search_term:
@@ -234,7 +268,13 @@ def search_object(search_term):
     except:
         pass
     
-    return [], f"No objects found for: {search_term}"
+    # Try fuzzy name search
+    fuzzy_results = search_by_name_fuzzy(search_term)
+    if fuzzy_results:
+        names = [f"{obj['name']} ({obj['type']})" for obj in fuzzy_results[:5]]
+        return [], f"💡 Did you mean: {', '.join(names)}?"
+    
+    return [], f"❌ No objects found for: {search_term}\n💡 Try: 'Sag A*', 'Betelgeuse', 'M31', or coordinates"
 
 
 def select_object(obj_index):
@@ -323,8 +363,12 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
             with gr.Column(scale=1):
                 gr.Markdown("""
                 **Search by:**
-                - Coordinates: `RA, Dec` (e.g., `266.4, -29.0`)
-                - Source ID: Integer (e.g., `1234567890`)
+                - **Name:** `Sag A*`, `Betelgeuse`, `M31`, `Proxima`
+                - **Aliases:** `Sagittarius A*`, `α Ori`, `Andromeda`
+                - **Coordinates:** `RA, Dec` (e.g., `266.4, -29.0`)
+                - **Source ID:** Integer (e.g., `1234567890`)
+                
+                **Famous Objects:** Sgr A*, Betelgeuse, Sirius, Vega, Rigel, Proxima, M31, M42, Pleiades, and more!
                 """)
                 
                 search_input = gr.Textbox(
@@ -379,25 +423,133 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
         with gr.Tabs():
             # Sub-Tab: 2D Sky Map
             with gr.Tab("Sky Map (2D)"):
-                gr.Markdown("**Full sky view with 50,000 stars**")
-                skymap_btn = gr.Button("🗺️ Generate Sky Map", variant="primary", size="lg")
-                skymap_plot = gr.Plot(label="2D Sky Map")
+                gr.Markdown("**Full sky view - Click on star for details**")
+                
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        skymap_btn = gr.Button("🗺️ Generate Sky Map", variant="primary", size="lg")
+                        skymap_plot = gr.Plot(label="2D Sky Map")
+                    
+                    with gr.Column(scale=1):
+                        clicked_object_info = gr.Markdown("**Click on a star to see details**")
                 
                 skymap_btn.click(
                     fn=generate_sky_map,
                     inputs=None,
                     outputs=skymap_plot
                 )
+                
+                # Note: Plotly click events in Gradio need special handling
+                # For now, users can use Object Search tab to find objects
+                gr.Markdown("*Tip: Use 'Object Search' tab to find specific objects by coordinates*")
             
             # Sub-Tab: 3D Sky Map
             with gr.Tab("3D Sky Map"):
-                gr.Markdown("**Interactive 3D view**")
-                skymap_3d_btn = gr.Button("🌐 Generate 3D Map", variant="primary", size="lg")
-                skymap_3d_plot = gr.Plot(label="3D Sky Map")
+                gr.Markdown("**Interactive 3D view with Object-Centered Navigation**")
+                
+                with gr.Row():
+                    with gr.Column(scale=2):
+                        skymap_3d_btn = gr.Button("🌐 Generate 3D Map", variant="primary", size="lg")
+                        skymap_3d_plot = gr.Plot(label="3D Sky Map")
+                    
+                    with gr.Column(scale=1):
+                        gr.Markdown("### 🎯 Object-Centered View")
+                        gr.Markdown("*Select an object in 'Object Search' tab first*")
+                        
+                        center_on_obj_btn = gr.Button("📍 Center on Selected Object", variant="secondary")
+                        
+                        nav_distance = gr.Slider(
+                            minimum=10,
+                            maximum=1000,
+                            value=100,
+                            step=10,
+                            label="Camera Distance (ly)"
+                        )
+                        
+                        nav_h_angle = gr.Slider(
+                            minimum=0,
+                            maximum=360,
+                            value=45,
+                            step=5,
+                            label="Horizontal Angle (°)"
+                        )
+                        
+                        nav_v_angle = gr.Slider(
+                            minimum=-90,
+                            maximum=90,
+                            value=30,
+                            step=5,
+                            label="Vertical Angle (°)"
+                        )
+                        
+                        update_view_btn = gr.Button("🔄 Update View", variant="primary")
+                
+                def generate_3d_centered(distance, h_angle, v_angle):
+                    """Generate 3D map centered on selected object."""
+                    data = load_star_database()
+                    
+                    # Sample for performance
+                    if len(data) > 5000:
+                        import random
+                        indices = sorted(random.sample(range(len(data)), 5000))
+                        data_sample = data.iloc[indices].copy()
+                    else:
+                        data_sample = data.copy()
+                    
+                    fig = create_3d_sky_map(data_sample, f"🌌 3D Sky Map - {len(data):,} Stars (showing {len(data_sample):,})")
+                    
+                    if selected_object is not None:
+                        try:
+                            obj = selected_object
+                            
+                            # Highlight selected object
+                            fig.add_trace(go.Scatter3d(
+                                x=[obj['ra']],
+                                y=[obj['dec']],
+                                z=[obj['distance_ly']],
+                                mode='markers',
+                                marker=dict(size=10, color='yellow', symbol='diamond', line=dict(width=2, color='red')),
+                                name=f'Selected: {obj["source_id"]}',
+                                hovertext=f"ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly"
+                            ))
+                            
+                            # Set camera to look at object
+                            import numpy as np
+                            h_rad = np.radians(h_angle)
+                            v_rad = np.radians(v_angle)
+                            
+                            eye_x = obj['ra'] + distance * np.cos(h_rad) * np.cos(v_rad)
+                            eye_y = obj['dec'] + distance * np.sin(h_rad) * np.cos(v_rad)
+                            eye_z = obj['distance_ly'] + distance * np.sin(v_rad)
+                            
+                            fig.update_layout(
+                                scene=dict(
+                                    camera=dict(
+                                        eye=dict(x=eye_x, y=eye_y, z=eye_z),
+                                        center=dict(x=obj['ra'], y=obj['dec'], z=obj['distance_ly'])
+                                    )
+                                )
+                            )
+                        except Exception as e:
+                            print(f"Error centering on object: {e}")
+                    
+                    return fig
                 
                 skymap_3d_btn.click(
                     fn=generate_3d_sky_map,
                     inputs=None,
+                    outputs=skymap_3d_plot
+                )
+                
+                center_on_obj_btn.click(
+                    fn=lambda: generate_3d_centered(100, 45, 30),
+                    inputs=None,
+                    outputs=skymap_3d_plot
+                )
+                
+                update_view_btn.click(
+                    fn=generate_3d_centered,
+                    inputs=[nav_distance, nav_h_angle, nav_v_angle],
                     outputs=skymap_3d_plot
                 )
             
@@ -428,13 +580,49 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
         with gr.Tabs():
             # Sub-Tab: g₁/g₂ Domains
             with gr.Tab("g₁/g₂ Domains"):
-                gr.Markdown("**Segment density Ξ(r) showing inner (g₂) and outer (g₁) domains**")
-                domains_btn = gr.Button("📊 Plot Domains", variant="primary", size="lg")
+                gr.Markdown("**Segment density Ξ(r) - Theory + Real Objects**")
+                
+                with gr.Row():
+                    domains_show_objects = gr.Checkbox(label="Show real objects", value=True)
+                    domains_btn = gr.Button("📊 Plot Domains", variant="primary", size="lg")
+                
                 domains_plot = gr.Plot(label="SSZ Domains")
                 
+                def plot_domains_with_objects(show_objects):
+                    fig = create_g1_g2_domain_plot()
+                    
+                    if show_objects and selected_object is not None:
+                        # Add selected object
+                        try:
+                            obj = selected_object
+                            
+                            # Calculate r/r_s
+                            G = 6.67430e-11
+                            c = 2.99792458e8
+                            M_sun = 1.989e30
+                            PC_TO_M = 3.0857e16
+                            
+                            M_kg = obj['mass_msun'] * M_sun
+                            r_s = 2 * G * M_kg / (c**2)
+                            r_m = obj['distance_pc'] * PC_TO_M
+                            r_ratio = r_m / r_s
+                            
+                            fig.add_trace(go.Scatter(
+                                x=[r_ratio],
+                                y=[obj['xi']],
+                                mode='markers',
+                                marker=dict(size=15, color='yellow', symbol='star', line=dict(width=2, color='red')),
+                                name=f'Selected Object (ID: {obj["source_id"]})',
+                                hovertext=f"RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly"
+                            ))
+                        except Exception as e:
+                            print(f"Error adding object to plot: {e}")
+                    
+                    return fig
+                
                 domains_btn.click(
-                    fn=lambda: create_g1_g2_domain_plot(),
-                    inputs=None,
+                    fn=plot_domains_with_objects,
+                    inputs=domains_show_objects,
                     outputs=domains_plot
                 )
             
