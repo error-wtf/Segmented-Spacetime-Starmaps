@@ -78,7 +78,7 @@ def create_g1_g2_domain_plot():
     r_ratio = r_range / r_s
     
     # Calculate Xi(r)
-    xi_values = Xi(r_range, r_s)
+    xi_values = np.array([Xi(r, r_s) for r in r_range])
     
     fig = go.Figure()
     
