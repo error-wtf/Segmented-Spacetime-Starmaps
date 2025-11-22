@@ -45,23 +45,32 @@ from ssz_physics_plots import (
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
 star_database = None  # Wird beim Start geladen
 last_query_data = None  # Für CSV Export
+selected_object = None  # Aktuell selektiertes Objekt
+selected_object_index = None  # Index des selektierten Objekts
 
 # ============================================================================
 # DATENBANK-FUNKTIONEN
 # ============================================================================
 
 def load_star_database():
-    """Lade 50k Sterne Datenbank."""
+    """Lade 500k Sterne Datenbank."""
     global star_database
     
     if star_database is not None:
         return star_database
     
-    database_file = Path(__file__).parent / 'ssz_data' / 'star_database_50k.csv'
+    # Try 500k first, fallback to 50k
+    database_file_500k = Path(__file__).parent / 'ssz_data' / 'star_database_500k.csv'
+    database_file_50k = Path(__file__).parent / 'ssz_data' / 'star_database_50k.csv'
     
-    if database_file.exists():
-        print(f"[INFO] Loading database: {database_file}")
-        star_database = pd.read_csv(database_file)
+    if database_file_500k.exists():
+        print(f"[INFO] Loading 500k database: {database_file_500k}")
+        star_database = pd.read_csv(database_file_500k)
+        print(f"[INFO] Loaded {len(star_database):,} stars")
+        return star_database
+    elif database_file_50k.exists():
+        print(f"[INFO] Loading 50k database: {database_file_50k}")
+        star_database = pd.read_csv(database_file_50k)
         print(f"[INFO] Loaded {len(star_database):,} stars")
         return star_database
     else:
@@ -174,6 +183,101 @@ def download_csv():
 
 
 # ============================================================================
+# OBJEKT-SELEKTION & SUCHE
+# ============================================================================
+
+def search_object(search_term):
+    """Suche nach Objekt in Datenbank."""
+    db = load_star_database()
+    
+    if not search_term or search_term.strip() == "":
+        return [], "Enter search term (e.g., coordinates or source_id)"
+    
+    search_term = search_term.strip()
+    
+    # Try parsing as coordinates (RA, Dec)
+    if ',' in search_term:
+        try:
+            parts = search_term.split(',')
+            ra_search = float(parts[0].strip())
+            dec_search = float(parts[1].strip())
+            
+            # Find nearby objects (within 1 degree)
+            distances = np.sqrt((db['ra'] - ra_search)**2 + (db['dec'] - dec_search)**2)
+            nearby_idx = np.argsort(distances)[:10]
+            
+            results = []
+            for idx in nearby_idx:
+                obj = db.iloc[idx]
+                results.append((
+                    f"ID:{obj['source_id']} | RA:{obj['ra']:.2f}° Dec:{obj['dec']:.2f}° | {obj['distance_ly']:.1f}ly",
+                    int(idx)
+                ))
+            
+            return results, f"Found {len(results)} objects near RA={ra_search}°, Dec={dec_search}°"
+            
+        except:
+            pass
+    
+    # Try parsing as source_id
+    try:
+        source_id = int(search_term)
+        mask = db['source_id'] == source_id
+        if mask.any():
+            idx = mask.idxmax()
+            obj = db.iloc[idx]
+            result = [(
+                f"ID:{obj['source_id']} | RA:{obj['ra']:.2f}° Dec:{obj['dec']:.2f}° | {obj['distance_ly']:.1f}ly",
+                int(idx)
+            )]
+            return result, f"Found object with ID {source_id}"
+    except:
+        pass
+    
+    return [], f"No objects found for: {search_term}"
+
+
+def select_object(obj_index):
+    """Selektiere ein Objekt."""
+    global selected_object, selected_object_index
+    
+    if obj_index is None or obj_index < 0:
+        selected_object = None
+        selected_object_index = None
+        return "No object selected"
+    
+    db = load_star_database()
+    
+    if obj_index >= len(db):
+        return f"Invalid index: {obj_index}"
+    
+    selected_object = db.iloc[obj_index]
+    selected_object_index = obj_index
+    
+    # Create info text
+    info = f"""
+## 🎯 Selected Object
+
+**Source ID:** {selected_object['source_id']}  
+**Position:** RA = {selected_object['ra']:.4f}°, Dec = {selected_object['dec']:.4f}°  
+**Distance:** {selected_object['distance_ly']:.2f} ly ({selected_object['distance_pc']:.2f} pc)  
+**Magnitude:** {selected_object['phot_g_mean_mag']:.2f}  
+**Mass:** {selected_object['mass_msun']:.3f} M☉
+
+### SSZ Parameters:
+- **Ξ(r):** {selected_object['xi']:.6f}  
+- **D_SSZ:** {selected_object['D_ssz']:.6f}  
+
+**Proper Motion:** RA: {selected_object['pmra']:.2f} mas/yr, Dec: {selected_object['pmdec']:.2f} mas/yr
+"""
+    
+    if not pd.isna(selected_object.get('radial_velocity')):
+        info += f"**Radial Velocity:** {selected_object['radial_velocity']:.2f} km/s\n"
+    
+    return info
+
+
+# ============================================================================
 # GRADIO APP
 # ============================================================================
 
@@ -206,10 +310,67 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
         
         **Database:** {len(db):,} GAIA DR3 stars loaded
         **Status:** Ready
-        **Features:** Sky Maps | SSZ Physics | CSV Export
+        **Features:** Sky Maps | SSZ Physics | Object Search | CSV Export
         
         Navigate to other tabs to explore!
         """)
+    
+    # TAB 1.5: Object Search & Selection
+    with gr.Tab("🔍 Object Search"):
+        gr.Markdown("### Search & Select Objects")
+        
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("""
+                **Search by:**
+                - Coordinates: `RA, Dec` (e.g., `266.4, -29.0`)
+                - Source ID: Integer (e.g., `1234567890`)
+                """)
+                
+                search_input = gr.Textbox(
+                    label="Search Term",
+                    placeholder="Enter coordinates (RA,Dec) or source ID",
+                    lines=1
+                )
+                search_btn = gr.Button("🔍 Search", variant="primary", size="lg")
+                
+                search_results = gr.Dropdown(
+                    label="Search Results",
+                    choices=[],
+                    interactive=True
+                )
+                
+                select_btn = gr.Button("✅ Select Object", variant="secondary")
+                
+            with gr.Column(scale=2):
+                object_info = gr.Markdown("**No object selected**")
+        
+        search_status = gr.Textbox(label="Status", lines=2, interactive=False)
+        
+        def on_search(search_term):
+            results, status = search_object(search_term)
+            if results:
+                return gr.Dropdown(choices=results, value=results[0][1]), status
+            else:
+                return gr.Dropdown(choices=[]), status
+        
+        def on_select(obj_idx):
+            if obj_idx is None:
+                return "No object selected"
+            info = select_object(obj_idx)
+            return info
+        
+        search_btn.click(
+            fn=on_search,
+            inputs=search_input,
+            outputs=[search_results, search_status]
+        )
+        
+        select_btn.click(
+            fn=on_select,
+            inputs=search_results,
+            outputs=object_info
+        )
     
     # TAB 2: Visualizations
     with gr.Tab("📊 Visualizations"):

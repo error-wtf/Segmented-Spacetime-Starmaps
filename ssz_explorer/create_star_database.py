@@ -27,18 +27,18 @@ print("Creating Star Database...")
 try:
     from astroquery.gaia import Gaia
     
-    print("📡 Fetching 50,000 stars from GAIA DR3...")
+    print("📡 Fetching 500,000 stars from GAIA DR3...")
     
     query = """
-    SELECT TOP 50000
+    SELECT TOP 500000
         source_id, ra, dec, parallax, 
         pmra, pmdec,
         phot_g_mean_mag, bp_rp,
         radial_velocity
     FROM gaiadr3.gaia_source
-    WHERE parallax > 0.1
-      AND phot_g_mean_mag < 15
-      AND parallax_error/parallax < 0.1
+    WHERE parallax > 0.05
+      AND phot_g_mean_mag < 16
+      AND parallax_error/parallax < 0.2
     ORDER BY phot_g_mean_mag ASC
     """
     
@@ -78,14 +78,14 @@ try:
     # SSZ time dilation
     df['D_ssz'] = 1 / (1 + df['xi'])
     
-    print(f"✅ Fetched {len(df)} stars from GAIA!")
+    print(f" Fetched {len(df)} stars from GAIA!")
     
 except Exception as e:
-    print(f"⚠️ GAIA fetch failed: {e}")
-    print("📊 Creating synthetic database...")
+    print(f" GAIA fetch failed: {e}")
+    print(" Creating synthetic database...")
     
     # Fallback: Create synthetic data
-    n = 50000
+    n = 500000
     
     # Galactic distribution
     data = []
@@ -159,7 +159,7 @@ except Exception as e:
     print(f"✅ Generated {len(df)} synthetic stars!")
 
 # Save to CSV
-output_file = Path(__file__).parent / 'ssz_data' / 'star_database_50k.csv'
+output_file = Path(__file__).parent / 'ssz_data' / 'star_database_500k.csv'
 output_file.parent.mkdir(exist_ok=True, parents=True)
 
 df.to_csv(output_file, index=False)
@@ -172,3 +172,7 @@ print(f"🎯 Dec range: {df['dec'].min():.1f}° - {df['dec'].max():.1f}°")
 print(f"📏 Distance range: {df['distance_ly'].min():.1f} - {df['distance_ly'].max():.1f} ly")
 print()
 print("✅ Database ready! App will load this automatically.")
+print()
+print("NOTE: For 500k stars, consider creating multiple regional files:")
+print("  - star_database_500k.csv (main)")
+print("  - Or split by regions for faster loading")
