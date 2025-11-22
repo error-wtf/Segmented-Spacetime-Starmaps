@@ -371,81 +371,47 @@ def plot_sky_positions(df, title="Sky Positions"):
 
 
 def generate_sky_map():
-    """Generate PROGRESSIVE sky map - loads 128 initially, 512 prefetch, streams more on zoom."""
+    """Generate sky map with GUARANTEED data!"""
     global last_query_data
     
-    # Check if we should use progressive loading
-    use_progressive = True  # Always use progressive for better performance
+    # ALWAYS load default universe as fallback
+    from star_map_generator import create_default_universe
     
-    if use_progressive:
+    # If we have query data, use it, otherwise use default universe
+    if last_query_data is not None and not last_query_data.empty:
         try:
-            from progressive_sky_map import create_progressive_sky_map_2d
-            
-            # Determine catalog from last query or use GAIA default
-            catalog = 'gaia'  # Default
-            max_objs = 128000  # MASSIVE DATABASE!
-            
-            fig, stats = create_progressive_sky_map_2d(
-                catalog_name=catalog,
-                max_objects=max_objs,
-                initial_display=5000  # 5K objects!
-            )
-            
-            return fig
-            
+            return create_sky_map(last_query_data, f"Sky Map ({len(last_query_data)} objects)")
         except Exception as e:
-            print(f"Progressive loading failed: {e}")
-            # Fallback to standard
+            print(f"Error creating sky map from query data: {e}")
+            # Fall through to default
     
-    # Fallback: standard loading
-    if last_query_data is None or last_query_data.empty:
-        from star_map_generator import create_default_universe
-        universe = create_default_universe()
-        return create_sky_map(
-            universe, 
-            title="🌌 Our Universe - Famous Objects (Default View)<br>"
-                  "<sub>Query catalogs to see real data from specific regions!</sub>"
-        )
-    
-    return create_sky_map(last_query_data, f"Sky Map ({len(last_query_data)} objects)")
+    # Default: Famous objects from our universe
+    universe = create_default_universe()
+    return create_sky_map(
+        universe, 
+        title="🌌 Our Universe - Famous Objects (Default View)<br>"
+              "<sub>Query catalogs in 'Multi-Catalog Search' tab for real data!</sub>"
+    )
 
 
 def generate_3d_sky_map():
-    """Generate NIGHT SKY VIEW - Echter Sternenhimmel von der Erde aus!"""
+    """Generate 3D sky map with GUARANTEED data!"""
     global last_query_data
     
-    # Use NIGHT SKY VIEW
-    use_night_sky = True
+    # ALWAYS have fallback ready
+    from star_map_generator import create_default_universe, create_3d_sky_map
     
-    if use_night_sky:
+    # If we have query data, use it
+    if last_query_data is not None and not last_query_data.empty:
         try:
-            from observatory_view import create_observatory_view
-            
-            # Create night sky view from Earth
-            fig, stats = create_observatory_view(
-                catalog_name='gaia',
-                max_objects=128000,
-                observer_lat=50.0,     # Deutschland
-                observer_lon=10.0,     # Deutschland
-                view_azimuth=180.0,    # Süden
-                view_altitude=45.0     # 45° über Horizont
-            )
-            
-            return fig
-            
+            return create_3d_sky_map(last_query_data, f"3D Sky Map ({len(last_query_data)} objects)")
         except Exception as e:
-            print(f"Night Sky view failed: {e}")
-            import traceback
-            traceback.print_exc()
-            # Fallback
+            print(f"Error creating 3D map from query data: {e}")
+            # Fall through to default
     
-    # Fallback: standard 3D
-    if last_query_data is None or last_query_data.empty:
-        from star_map_generator import create_default_universe, create_3d_sky_map
-        universe = create_default_universe()
-        return create_3d_sky_map(universe, "🌌 Our Universe - 3D View (Default)")
-    
-    return create_3d_sky_map(last_query_data, "3D Sky Map")
+    # Default: Famous objects from our universe
+    universe = create_default_universe()
+    return create_3d_sky_map(universe, "🌌 Our Universe - 3D View (Default)<br><sub>Query catalogs for real data!</sub>")
 
 
 def generate_constellation_map(ra, dec, fov):
