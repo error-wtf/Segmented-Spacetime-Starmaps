@@ -174,8 +174,9 @@ def create_radial_stretch_png():
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
-    img = Image.open(buf)
+    img = Image.open(buf).copy()  # CRITICAL: .copy()!
     plt.close()
+    buf.close()
     
     return img
 
@@ -234,7 +235,8 @@ def create_combined_analysis_png():
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
-    img = Image.open(buf)
+    img = Image.open(buf).copy()  # CRITICAL: .copy()!
     plt.close()
+    buf.close()
     
     return img
