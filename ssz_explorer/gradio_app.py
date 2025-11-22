@@ -378,13 +378,14 @@ with gr.Blocks(title="SSZ Explorer", theme=gr.themes.Soft()) as app:
 
 
 # Launch function
-def launch_app(share=False):
+def launch_app(share=False, port=7862):
     """Launch the Gradio app."""
-    app.launch(share=share, server_name="0.0.0.0", server_port=7860)
+    print(f"Launching SSZ Explorer on Port {port}...")
+    print(f"Open browser at: http://localhost:{port}")
+    app.launch(share=share, server_name="0.0.0.0", server_port=port)
 
 
 if __name__ == "__main__":
-    # For local use
-    launch_app(share=False)
+    launch_app(share=False, port=7862)
     
     # For Colab, use: launch_app(share=True)
