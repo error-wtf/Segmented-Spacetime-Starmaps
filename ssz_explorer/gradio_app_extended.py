@@ -80,6 +80,32 @@ def get_sdss_fetcher():
     return _sdss_fetch
 
 
+def download_csv():
+    """Download complete query results as CSV."""
+    global last_query_data
+    
+    if last_query_data is None or last_query_data.empty:
+        return None
+    
+    # Save to temporary CSV file
+    import tempfile
+    import os
+    
+    # Create temp file
+    fd, path = tempfile.mkstemp(suffix='.csv', prefix='ssz_export_')
+    
+    try:
+        # Write CSV
+        last_query_data.to_csv(path, index=False)
+        return path
+    except Exception as e:
+        print(f"CSV export error: {e}")
+        if os.path.exists(path):
+            os.close(fd)
+            os.unlink(path)
+        return None
+
+
 def query_multi_catalog(catalog, ra, dec, radius):
     """Query any catalog by coordinates."""
     global last_query_data
@@ -492,12 +518,22 @@ with gr.Blocks(title="SSZ Explorer - Complete Edition", theme=gr.themes.Soft()) 
                 with gr.Column():
                     status_out = gr.Textbox(label="Status", lines=2)
             
-            results_table = gr.Dataframe(label="Results", interactive=False)
+            results_table = gr.Dataframe(label="Results (Preview - First 20 rows)", interactive=False)
+            
+            with gr.Row():
+                download_btn = gr.DownloadButton("📥 Download Complete CSV", variant="secondary")
+                gr.Markdown("**Download includes ALL results, not just preview!**")
             
             search_btn.click(
                 fn=query_multi_catalog,
                 inputs=[catalog_select, ra_input, dec_input, radius_input],
                 outputs=[status_out, results_table]
+            )
+            
+            download_btn.click(
+                fn=download_csv,
+                inputs=[],
+                outputs=download_btn
             )
         
         # Tab 2: Exoplanets
