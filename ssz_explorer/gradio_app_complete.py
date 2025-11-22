@@ -739,7 +739,7 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
                 stretch_plot = gr.Plot(label="Radial Stretch")
                 
                 stretch_btn.click(
-                    fn=lambda: create_radial_stretch_plot(),
+                    fn=lambda: wrap_for_gradio(create_radial_stretch_plot()),
                     inputs=None,
                     outputs=stretch_plot
                 )
