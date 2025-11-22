@@ -20,6 +20,7 @@ G = 6.67430e-11          # Gravitational constant [m³ kg⁻¹ s⁻²]
 C = 2.99792458e8         # Speed of light [m/s]
 M_SUN = 1.98847e30       # Solar mass [kg]
 PHI = (1 + np.sqrt(5))/2 # Golden ratio
+PC_TO_M = 3.0857e16      # Parsec to meters
 
 # SSZ Parameters (Standard)
 ALPHA = 0.12
@@ -69,12 +70,15 @@ def create_g1_g2_domain_plot():
     Segment Density Ξ(r) - Showing g₁ and g₂ domains
     
     WISSENSCHAFTLICH KORREKT: γ(r) = 1 - α*exp[-(r/r_c)²]
+    Uses PARSEC units for compatibility with GAIA/ESO/ALMA data
     """
     M = 4.3e6 * M_SUN  # Sgr A* Mass
     r_s = r_schwarzschild(M)
+    r_s_pc = r_s / PC_TO_M  # Convert to parsec
     
-    # Radius range: 1.1 to 100 r_s (avoid singularity at r_s)
-    r_range = np.logspace(np.log10(1.1*r_s), np.log10(100*r_s), 500)
+    # Radius range in parsec: from 10^-6 to 10^2 pc (covers stellar to galactic scales)
+    r_range_pc = np.logspace(-6, 2, 500)
+    r_range = r_range_pc * PC_TO_M  # Convert to meters for calculations
     r_ratio = r_range / r_s
     
     # Calculate Xi(r)
@@ -84,27 +88,28 @@ def create_g1_g2_domain_plot():
     
     # Plot Xi(r)
     fig.add_trace(go.Scatter(
-        x=r_ratio,
+        x=r_range_pc,
         y=xi_values,
         mode='lines',
         name='Ξ(r) = Segment Density',
         line=dict(color='orange', width=3),
         fill='tozeroy',
         fillcolor='rgba(255,165,0,0.2)',
-        hovertemplate='r/r_s: %{x:.2f}<br>Ξ(r): %{y:.4f}<extra></extra>'
+        hovertemplate='r: %{x:.2e} pc<br>Ξ(r): %{y:.4f}<extra></extra>'
     ))
     
-    # Mark r_c boundary
-    fig.add_vline(x=R_C, line_dash="dash", line_color="red",
-                  annotation_text=f"r_c = {R_C} r_s")
+    # Mark r_c boundary in parsec
+    r_c_pc = R_C * r_s_pc
+    fig.add_vline(x=r_c_pc, line_dash="dash", line_color="red",
+                  annotation_text=f"r_c = {r_c_pc:.2e} pc")
     
     fig.update_layout(
         title=dict(
-            text='<b>Segment Density Ξ(r)</b><br><sub>γ(r) = 1 - α·exp[-(r/r_c)²], α=0.12, r_c=1.9</sub>',
+            text='<b>Segment Density Ξ(r)</b><br><sub>γ(r) = 1 - α·exp[-(r/r_c)²], α=0.12, r_c=1.9 | Units: parsec (GAIA compatible)</sub>',
             x=0.5, xanchor='center', font=dict(size=18, color='white')
         ),
         xaxis=dict(
-            title='<b>r / r_s</b>',
+            title='<b>Radius [parsec]</b>',
             type='log',
             gridcolor='rgba(100,100,150,0.3)'
         ),
