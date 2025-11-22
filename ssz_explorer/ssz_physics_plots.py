@@ -73,8 +73,8 @@ def create_g1_g2_domain_plot():
     M = 4.3e6 * M_SUN  # Sgr A* Mass
     r_s = r_schwarzschild(M)
     
-    # Radius range: 0.1 to 100 r_s
-    r_range = np.logspace(np.log10(0.1*r_s), np.log10(100*r_s), 500)
+    # Radius range: 1.1 to 100 r_s (avoid singularity at r_s)
+    r_range = np.logspace(np.log10(1.1*r_s), np.log10(100*r_s), 500)
     r_ratio = r_range / r_s
     
     # Calculate Xi(r)
@@ -133,7 +133,7 @@ def create_time_dilation_comparison():
     M = 4.3e6 * M_SUN  # Sgr A* Mass
     r_s = r_schwarzschild(M)
     
-    r_range = np.logspace(np.log10(0.1*r_s), np.log10(100*r_s), 500)
+    r_range = np.logspace(np.log10(1.1*r_s), np.log10(100*r_s), 500)
     r_ratio = r_range / r_s
     
     # Calculate metric functions
@@ -201,7 +201,7 @@ def create_radial_stretch_plot():
     M = 4.3e6 * M_SUN
     r_s = r_schwarzschild(M)
     
-    r_range = np.logspace(np.log10(0.1*r_s), np.log10(100*r_s), 500)
+    r_range = np.logspace(np.log10(1.1*r_s), np.log10(100*r_s), 500)
     r_ratio = r_range / r_s
     
     # Proper time factors
@@ -268,7 +268,7 @@ def create_combined_ssz_analysis():
     M = 4.3e6 * M_SUN
     r_s = r_schwarzschild(M)
     
-    r_range = np.logspace(np.log10(0.1*r_s), np.log10(100*r_s), 300)
+    r_range = np.logspace(np.log10(1.1*r_s), np.log10(100*r_s), 300)
     r_ratio = r_range / r_s
     
     # Calculate all quantities
