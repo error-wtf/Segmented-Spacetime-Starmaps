@@ -73,14 +73,16 @@ def create_domains_plot_png():
     ax.legend(fontsize=12, facecolor='#1a1a2e', edgecolor='white', labelcolor='white')
     ax.tick_params(colors='white')
     
-    # Convert to PIL Image
+    # Convert to Numpy Array for Gradio
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
     img = Image.open(buf)
+    img_array = np.array(img)  # PIL -> Numpy
     plt.close()
+    buf.close()
     
-    return img
+    return img_array
 
 
 def create_time_dilation_png():
@@ -122,14 +124,16 @@ def create_time_dilation_png():
     ax.legend(fontsize=12, facecolor='#1a1a2e', edgecolor='white', labelcolor='white')
     ax.tick_params(colors='white')
     
-    # Convert to PIL Image
+    # Convert to Numpy Array for Gradio
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
     img = Image.open(buf)
+    img_array = np.array(img)  # PIL -> Numpy
     plt.close()
+    buf.close()
     
-    return img
+    return img_array
 
 
 def create_radial_stretch_png():
