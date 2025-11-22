@@ -73,12 +73,13 @@ def create_domains_plot_png():
     ax.legend(fontsize=12, facecolor='#1a1a2e', edgecolor='white', labelcolor='white')
     ax.tick_params(colors='white')
     
-    # Convert to PIL Image
+    # Convert to PIL Image - FIX: Keep buffer open!
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
-    img = Image.open(buf)
+    img = Image.open(buf).copy()  # CRITICAL: .copy() to load into memory!
     plt.close()
+    buf.close()
     
     return img
 
@@ -122,12 +123,13 @@ def create_time_dilation_png():
     ax.legend(fontsize=12, facecolor='#1a1a2e', edgecolor='white', labelcolor='white')
     ax.tick_params(colors='white')
     
-    # Convert to PIL Image
+    # Convert to PIL Image - FIX: Keep buffer open!
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     buf.seek(0)
-    img = Image.open(buf)
+    img = Image.open(buf).copy()  # CRITICAL: .copy() to load into memory!
     plt.close()
+    buf.close()
     
     return img
 
