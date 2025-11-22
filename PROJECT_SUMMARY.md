@@ -1,6 +1,6 @@
-# SSZ Skymap - Project Summary
+﻿# SSZ Skymap - Project Summary
 
-**Complete Stellaris-style 3D star map implementation**
+**Complete Interactive3D-style 3D star map implementation**
 
 **Date:** 2025-11-22  
 **Duration:** 4 hours 15 minutes  
@@ -10,7 +10,7 @@
 
 ## 🎯 Mission Accomplished
 
-**Goal:** Build an interactive 3D star map like Stellaris with real SSZ physics
+**Goal:** Build an interactive 3D star map like Interactive3D with real SSZ physics
 
 **Result:** 3 fully functional applications + complete documentation
 
@@ -48,8 +48,8 @@ skymap/
 ```
 1. README_SKYMAP.md                - Main guide
 2. USAGE_GUIDE.md                  - Detailed usage
-3. STELLARIS_SKYMAP_COMPLETE.md    - Full summary
-4. ROADMAP_STELLARIS_STYLE_SKYMAP.md - Original plan
+3. Interactive3D_SKYMAP_COMPLETE.md    - Full summary
+4. ROADMAP_Interactive3D_STYLE_SKYMAP.md - Original plan
 5. PHASE2_COMPLETE.md              - Effects phase
 6. PHASE3_COMPLETE.md              - Dashboard phase
 7. SKYMAP_PROGRESS.md              - Development tracking
@@ -99,9 +99,9 @@ skymap/
 
 ---
 
-## 🎮 Stellaris Comparison
+## 🎮 Interactive3D Comparison
 
-| Feature | Stellaris | SSZ Skymap | Winner |
+| Feature | Interactive3D | SSZ Skymap | Winner |
 |---------|-----------|------------|--------|
 | **3D Navigation** | ✅ Yes | ✅ Yes | 🤝 TIE |
 | **Star Details** | ✅ Yes | ✅ Yes | 🤝 TIE |
@@ -114,7 +114,7 @@ skymap/
 | **Real Data** | ❌ No | ✅ GAIA | 🏆 **SSZ** |
 | **Open Source** | ❌ No | ✅ Yes | 🏆 **SSZ** |
 
-**Result: We matched Stellaris AND exceeded it!** 🎉
+**Result: We matched Interactive3D AND exceeded it!** 🎉
 
 ---
 
@@ -224,7 +224,7 @@ skymap/                (new for this project)
 6. ✅ Educational value
 
 ### **User Experience:**
-1. ✅ Stellaris-style interface
+1. ✅ Interactive3D-style interface
 2. ✅ Instant response times
 3. ✅ Beautiful themes
 4. ✅ Intuitive controls
@@ -297,8 +297,8 @@ Professional tool
 3. `INSTALL_DASHBOARD.md` - Setup guide
 
 ### **For Developers:**
-1. `STELLARIS_SKYMAP_COMPLETE.md` - Full project
-2. `ROADMAP_STELLARIS_STYLE_SKYMAP.md` - Original plan
+1. `Interactive3D_SKYMAP_COMPLETE.md` - Full project
+2. `ROADMAP_Interactive3D_STYLE_SKYMAP.md` - Original plan
 3. Code docstrings - Every function
 
 ### **For Scientists:**
@@ -310,7 +310,7 @@ Professional tool
 
 ## 🌟 Success Stories
 
-### **✅ Goal: Stellaris-style interface**
+### **✅ Goal: Interactive3D-style interface**
 **Result:** Matched ALL major features + added physics
 
 ### **✅ Goal: Real SSZ physics**
@@ -402,7 +402,7 @@ RATING: ⭐⭐⭐⭐⭐
 
 ## 🎉 Conclusion
 
-**We built a complete Stellaris-style 3D star map with real SSZ physics in 4 hours!**
+**We built a complete Interactive3D-style 3D star map with real SSZ physics in 4 hours!**
 
 **Deliverables:**
 - ✅ 3 fully functional applications
@@ -420,7 +420,7 @@ RATING: ⭐⭐⭐⭐⭐
 - ✅ Fast performance
 - ✅ Fully documented
 
-**Comparison to Stellaris:**
+**Comparison to Interactive3D:**
 - ✅ Matched all major features
 - ✅ Added real physics
 - ✅ Added real data
@@ -431,6 +431,6 @@ RATING: ⭐⭐⭐⭐⭐
 ---
 
 © 2025 Carmen Wrede & Lino Casu  
-**"From zero to Stellaris in 4 hours"**
+**"From zero to Interactive3D in 4 hours"**
 
 Licensed under Anti-Capitalist Software License v1.4

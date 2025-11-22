@@ -1,4 +1,4 @@
-# SSZ Skymap - Implementation Progress
+﻿# SSZ Skymap - Implementation Progress
 
 **Started:** 2025-11-22 12:32  
 **Current Status:** Phase 1 COMPLETE ✅
@@ -131,7 +131,7 @@ skymap/ui/
 ### User Experience:
 - **Startup:** <5 seconds
 - **Response:** Instant hover/click
-- **Controls:** Intuitive (like Stellaris)
+- **Controls:** Intuitive (like Interactive3D)
 - **Info:** Complete star data
 
 ---
@@ -170,4 +170,4 @@ python skymap_3d.py --mode single --theme dark
 ---
 
 **© 2025 Carmen Wrede, Lino Casu**  
-**Stellaris-style SSZ Skymap** 🎮✨
+**Interactive3D-style SSZ Skymap** 🎮✨

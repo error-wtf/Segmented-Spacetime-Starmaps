@@ -1,5 +1,5 @@
-"""
-SSZ Skymap - Stellaris-style 3D Interactive Star Map
+﻿"""
+SSZ Skymap - Interactive3D-style 3D Interactive Star Map
 
 An interactive 3D visualization tool for exploring the universe
 with Segmented Spacetime (SSZ) physics.

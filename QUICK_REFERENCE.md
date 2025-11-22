@@ -1,4 +1,4 @@
-# SSZ Skymap - Quick Reference Card
+﻿# SSZ Skymap - Quick Reference Card
 
 **Fast lookup for all commands and features**
 
@@ -195,7 +195,7 @@ Fix:   python skymap_3d.py --offline
 README_SKYMAP.md               Main guide
 USAGE_GUIDE.md                 Detailed usage
 PROJECT_SUMMARY.md             Project summary
-STELLARIS_SKYMAP_COMPLETE.md   Full report
+Interactive3D_SKYMAP_COMPLETE.md   Full report
 INSTALL_DASHBOARD.md           Dashboard setup
 ```
 

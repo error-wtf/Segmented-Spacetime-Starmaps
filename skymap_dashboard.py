@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 SSZ Skymap Dashboard - Full Interactive Web Application
 Phase 3: UI/HUD System with Dash
 
-Stellaris-style dashboard with interactive controls!
+Interactive3D-style dashboard with interactive controls!
 
 © 2025 Carmen Wrede, Lino Casu
 """

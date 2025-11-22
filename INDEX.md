@@ -1,4 +1,4 @@
-# SSZ Skymap - Master Index
+﻿# SSZ Skymap - Master Index
 
 **Complete navigation for all project files**
 
@@ -12,7 +12,7 @@
 3. Run: `python skymap_advanced.py`
 
 ### **Want to understand the project?**
-→ **STELLARIS_SKYMAP_COMPLETE.md** - Full story
+→ **Interactive3D_SKYMAP_COMPLETE.md** - Full story
 
 ### **Need help with commands?**
 → **USAGE_GUIDE.md** - Detailed usage
@@ -41,7 +41,7 @@ USAGE_GUIDE.md             - Detailed commands
 
 ### **Project Information:**
 ```
-STELLARIS_SKYMAP_COMPLETE.md   - Complete project report
+Interactive3D_SKYMAP_COMPLETE.md   - Complete project report
 PROJECT_SUMMARY.md             - Executive summary
 FILES_CREATED.md               - List of all 33 files
 INDEX.md                       - This file (navigation)
@@ -49,7 +49,7 @@ INDEX.md                       - This file (navigation)
 
 ### **Development History:**
 ```
-ROADMAP_STELLARIS_STYLE_SKYMAP.md  - Original plan
+ROADMAP_Interactive3D_STYLE_SKYMAP.md  - Original plan
 SKYMAP_PROGRESS.md                 - Development tracking
 PHASE2_COMPLETE.md                 - Visual effects phase
 PHASE3_COMPLETE.md                 - Dashboard phase
@@ -120,7 +120,7 @@ outputs_quick_start/
 → Read: INSTALL_DASHBOARD.md
 
 **...understand what was built**
-→ Read: STELLARIS_SKYMAP_COMPLETE.md
+→ Read: Interactive3D_SKYMAP_COMPLETE.md
 → Read: PROJECT_SUMMARY.md
 
 **...see all files created**
@@ -156,8 +156,8 @@ Status:             ✅ Production-Ready
 → QUICK_REFERENCE.md (quick lookup)
 
 ### **Project Goals:**
-→ ROADMAP_STELLARIS_STYLE_SKYMAP.md (original plan)
-→ STELLARIS_SKYMAP_COMPLETE.md (achievement report)
+→ ROADMAP_Interactive3D_STYLE_SKYMAP.md (original plan)
+→ Interactive3D_SKYMAP_COMPLETE.md (achievement report)
 
 ### **Development Process:**
 → SKYMAP_PROGRESS.md (tracking)
@@ -222,8 +222,8 @@ python skymap_dashboard.py
 3. Run an app!
 
 ### **For Detailed Understanding:**
-1. STELLARIS_SKYMAP_COMPLETE.md (full story)
-2. ROADMAP_STELLARIS_STYLE_SKYMAP.md (plan)
+1. Interactive3D_SKYMAP_COMPLETE.md (full story)
+2. ROADMAP_Interactive3D_STYLE_SKYMAP.md (plan)
 3. PHASE2_COMPLETE.md & PHASE3_COMPLETE.md (phases)
 
 ### **For Development:**
@@ -239,7 +239,7 @@ python skymap_dashboard.py
 📘 README_SKYMAP.md                 - Start here
 ⚡ QUICK_REFERENCE.md               - Commands
 📖 USAGE_GUIDE.md                   - Detailed usage
-🎉 STELLARIS_SKYMAP_COMPLETE.md     - Full report
+🎉 Interactive3D_SKYMAP_COMPLETE.md     - Full report
 📊 PROJECT_SUMMARY.md               - Executive summary
 📁 FILES_CREATED.md                 - All 33 files
 🗺️ INDEX.md                         - This file
@@ -256,7 +256,7 @@ python skymap_dashboard.py
 **Solution:** Check QUICK_REFERENCE.md or USAGE_GUIDE.md
 
 **Problem:** Want to understand project
-**Solution:** Read STELLARIS_SKYMAP_COMPLETE.md
+**Solution:** Read Interactive3D_SKYMAP_COMPLETE.md
 
 **Problem:** Dashboard not working
 **Solution:** Read INSTALL_DASHBOARD.md, install dependencies

@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 SSZ Skymap 3D - Full Implementation (Phase 1)
-Stellaris-style 3D interactive star map with SSZ physics
+Interactive3D-style 3D interactive star map with SSZ physics
 
 © 2025 Carmen Wrede, Lino Casu
 """

@@ -1,4 +1,4 @@
-# SSZ Skymap - Stellaris-Style 3D Star Map
+﻿# SSZ Skymap - Interactive3D-Style 3D Star Map
 
 **Interactive 3D star map with real SSZ (Segmented Spacetime) physics**
 
@@ -10,7 +10,7 @@
 
 ## 🎮 Features
 
-### **Stellaris-Style Interface**
+### **Interactive3D-Style Interface**
 - ✅ 3D navigation (rotate, zoom, pan)
 - ✅ Interactive controls
 - ✅ Real-time updates
@@ -340,10 +340,10 @@ pip install -r requirements-dashboard.txt
 ### **Quick Guides:**
 - `README_SKYMAP.md` - This file (quick start)
 - `INSTALL_DASHBOARD.md` - Dashboard setup
-- `STELLARIS_SKYMAP_COMPLETE.md` - Full project summary
+- `Interactive3D_SKYMAP_COMPLETE.md` - Full project summary
 
 ### **Technical Docs:**
-- `ROADMAP_STELLARIS_STYLE_SKYMAP.md` - Original plan
+- `ROADMAP_Interactive3D_STYLE_SKYMAP.md` - Original plan
 - `PHASE2_COMPLETE.md` - Visual effects
 - `PHASE3_COMPLETE.md` - Dashboard implementation
 - `SKYMAP_PROGRESS.md` - Development tracking

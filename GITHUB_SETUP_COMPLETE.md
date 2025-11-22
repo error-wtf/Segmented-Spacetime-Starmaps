@@ -1,4 +1,4 @@
-# ✅ GITHUB SETUP COMPLETE!
+﻿# ✅ GITHUB SETUP COMPLETE!
 
 **Repository:** https://github.com/error-wtf/Segmented-Spacetime-Starmaps  
 **Status:** Ready to Push  
@@ -26,7 +26,7 @@ git push -u origin main
 
 ### **1. Google Colab Notebook** ✨
 ```
-File: SSZ_Stellaris_Viewer_Colab.ipynb
+File: SSZ_Interactive3D_Viewer_Colab.ipynb
 Features:
   ✅ Browser-based (no installation)
   ✅ Real GAIA DR3 queries
@@ -35,7 +35,7 @@ Features:
   ✅ Step-by-step guide
   
 URL (after push):
-https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Stellaris_Viewer_Colab.ipynb
+https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Interactive3D_Viewer_Colab.ipynb
 ```
 
 ### **2. Updated README** 📚
@@ -52,7 +52,7 @@ Features:
 
 ### **3. Requirements.txt** 📦
 ```
-File: stellaris_ssz_viewer/requirements.txt
+File: Interactive3D_ssz_viewer/requirements.txt
 Contents:
   - dash, plotly, numpy, pandas
   - astroquery, astropy (real data)
@@ -112,7 +112,7 @@ Features:
 
 ### **Notebooks:**
 ```
-✅ SSZ_Stellaris_Viewer_Colab.ipynb
+✅ SSZ_Interactive3D_Viewer_Colab.ipynb
 ```
 
 ### **Configuration:**
@@ -167,16 +167,16 @@ On GitHub repository page:
 
 ### **Primary Badge (README):**
 ```markdown
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Stellaris_Viewer_Colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Interactive3D_Viewer_Colab.ipynb)
 ```
 
 ### **Alternative Links:**
 ```
 Direct GitHub:
-https://github.com/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Stellaris_Viewer_Colab.ipynb
+https://github.com/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Interactive3D_Viewer_Colab.ipynb
 
 Direct Colab:
-https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Stellaris_Viewer_Colab.ipynb
+https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Interactive3D_Viewer_Colab.ipynb
 ```
 
 ---
@@ -267,7 +267,7 @@ Solution:
 ```
 Solution:
 1. Verify file pushed to GitHub
-2. Check file is in root: SSZ_Stellaris_Viewer_Colab.ipynb
+2. Check file is in root: SSZ_Interactive3D_Viewer_Colab.ipynb
 3. Wait 1-2 minutes for GitHub to process
 4. Try direct URL
 ```

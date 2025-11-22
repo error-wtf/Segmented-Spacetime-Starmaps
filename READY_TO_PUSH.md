@@ -1,6 +1,6 @@
-# ✅ READY TO PUSH - Complete Checklist
+﻿# ✅ READY TO PUSH - Complete Checklist
 
-**SSZ Stellaris Viewer**  
+**SSZ Interactive3D Viewer**  
 **Date:** 2025-11-22  
 **Status:** 🚀 READY FOR GITHUB & HUGGING FACE!
 
@@ -104,11 +104,11 @@ Badge: "Open in Colab" in README
 # Upload to HF Space:
 # 1. Create Space (Gradio SDK)
 # 2. Upload: gradio_app.py + requirements.txt
-# 3. Add: stellaris_ssz_viewer/ folder
+# 3. Add: Interactive3D_ssz_viewer/ folder
 # 4. Launch!
 
 # Public URL will be:
-# https://huggingface.co/spaces/[username]/ssz-stellaris-viewer
+# https://huggingface.co/spaces/[username]/ssz-Interactive3D-viewer
 ```
 
 ### **Option 3: Google Colab** (Ready!)
@@ -152,7 +152,7 @@ Status: OUTSTANDING SUCCESS! 🎉
    pip install gradio>=4.0.0
    
 2. □ Test Gradio locally (optional)
-   python stellaris_ssz_viewer/gradio_app.py
+   python Interactive3D_ssz_viewer/gradio_app.py
    
 3. □ Push to GitHub
    .\PUSH_TO_GITHUB.ps1

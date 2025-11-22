@@ -1,4 +1,4 @@
-# Install SSZ Skymap Dashboard
+﻿# Install SSZ Skymap Dashboard
 
 **Quick install for Phase 3 Dashboard**
 
@@ -98,7 +98,7 @@ python skymap_advanced.py
 ```bash
 pip install dash dash-bootstrap-components
 python skymap_dashboard.py
-# Full Stellaris-style dashboard!
+# Full Interactive3D-style dashboard!
 ```
 
 ---

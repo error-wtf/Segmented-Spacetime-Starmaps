@@ -1,4 +1,4 @@
-# SSZ Skymap - Usage Guide
+﻿# SSZ Skymap - Usage Guide
 
 **Complete guide for using all three applications**
 
@@ -411,7 +411,7 @@ Browser:       Chrome/Firefox/Edge (all work)
 
 **After Quick Start:**
 1. ✅ Read `README_SKYMAP.md` (detailed features)
-2. ✅ Check `STELLARIS_SKYMAP_COMPLETE.md` (full project)
+2. ✅ Check `Interactive3D_SKYMAP_COMPLETE.md` (full project)
 3. ✅ Explore code in `skymap/` directory
 4. ✅ Try dashboard if interested
 

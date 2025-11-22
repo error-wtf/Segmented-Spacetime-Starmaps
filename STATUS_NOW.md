@@ -1,6 +1,6 @@
-# 📊 CURRENT STATUS - RIGHT NOW
+﻿# 📊 CURRENT STATUS - RIGHT NOW
 
-**SSZ Stellaris Viewer**  
+**SSZ Interactive3D Viewer**  
 **Date:** 2025-11-22, 14:16 Uhr  
 **Session:** Post-Internet-Interruption Check
 

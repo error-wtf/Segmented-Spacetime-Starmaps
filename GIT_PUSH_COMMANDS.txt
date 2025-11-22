@@ -1,4 +1,4 @@
-# Git Commands für GitHub Push
+﻿# Git Commands für GitHub Push
 # Repository: https://github.com/error-wtf/Segmented-Spacetime-Starmaps
 
 # 1. Git initialisieren (falls noch nicht geschehen)
@@ -11,7 +11,7 @@ git remote add origin https://github.com/error-wtf/Segmented-Spacetime-Starmaps.
 git remote set-url origin https://github.com/error-wtf/Segmented-Spacetime-Starmaps.git
 
 # 3. Alle Dateien hinzufügen
-git add stellaris_ssz_viewer/
+git add Interactive3D_ssz_viewer/
 
 # 4. Commit mit Sprint 1 Success Message
 git commit -m "Sprint 1 Complete: GAIA DR3 Integration
