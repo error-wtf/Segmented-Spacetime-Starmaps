@@ -298,16 +298,10 @@ def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1
             
         r_s = 2 * G * (m * M_SUN) / C**2
         
-        # Distance conversion: check if in meters or parsecs
-        dist_raw = obj.get('distance', None)
-        if dist_raw is None or np.isnan(dist_raw):
+        # Get distance (already in parsecs in database)
+        dist_pc = obj.get('distance_pc', None)
+        if dist_pc is None or np.isnan(dist_pc):
             continue
-        
-        # If distance > 1000, assume it's in meters, convert to parsecs
-        if dist_raw > 1000:
-            dist_pc = dist_raw / PC_TO_M  # meters to parsecs
-        else:
-            dist_pc = dist_raw  # already in parsecs
         
         r = dist_pc * PC_TO_M  # pc to meters
         r_ratio = r / r_s
