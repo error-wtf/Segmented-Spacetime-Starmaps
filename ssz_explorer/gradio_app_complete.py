@@ -1074,13 +1074,25 @@ When complete, the enriched database will be AUTO-SAVED!
                 stretch_plot = gr.Image(label="Radial Stretch", type="filepath")
                 
                 def plot_radial_stretch():
-                    if selected_object is not None:
-                        mass_msun = selected_object['mass_msun']
-                        obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
-                        distance_pc = selected_object.get('distance', 1000.0)
-                        return create_radial_stretch_png(obj_name, mass_msun, distance_pc)
-                    else:
-                        return create_radial_stretch_png("Sgr A*", 4.3e6, 8000.0)
+                    try:
+                        if selected_object is not None:
+                            mass_msun = selected_object['mass_msun']
+                            obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
+                            distance_pc = selected_object.get('distance', 1000.0)
+                            print(f"[DEBUG] Radial Stretch: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
+                            result = create_radial_stretch_png(obj_name, mass_msun, distance_pc)
+                            print(f"[DEBUG] Result: {result}")
+                            return result
+                        else:
+                            print("[DEBUG] Radial Stretch: Using default Sgr A*")
+                            result = create_radial_stretch_png("Sgr A*", 4.3e6, 8000.0)
+                            print(f"[DEBUG] Result: {result}")
+                            return result
+                    except Exception as e:
+                        print(f"[ERROR] Radial Stretch failed: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        return None
                 
                 stretch_btn.click(
                     fn=plot_radial_stretch,
@@ -1095,13 +1107,25 @@ When complete, the enriched database will be AUTO-SAVED!
                 combined_plot = gr.Image(label="Combined SSZ Analysis", type="filepath")
                 
                 def plot_combined():
-                    if selected_object is not None:
-                        mass_msun = selected_object['mass_msun']
-                        obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
-                        distance_pc = selected_object.get('distance', 1000.0)
-                        return create_combined_analysis_png(obj_name, mass_msun, distance_pc)
-                    else:
-                        return create_combined_analysis_png("Sgr A*", 4.3e6, 8000.0)
+                    try:
+                        if selected_object is not None:
+                            mass_msun = selected_object['mass_msun']
+                            obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
+                            distance_pc = selected_object.get('distance', 1000.0)
+                            print(f"[DEBUG] Combined Analysis: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
+                            result = create_combined_analysis_png(obj_name, mass_msun, distance_pc)
+                            print(f"[DEBUG] Result: {result}")
+                            return result
+                        else:
+                            print("[DEBUG] Combined Analysis: Using default Sgr A*")
+                            result = create_combined_analysis_png("Sgr A*", 4.3e6, 8000.0)
+                            print(f"[DEBUG] Result: {result}")
+                            return result
+                    except Exception as e:
+                        print(f"[ERROR] Combined Analysis failed: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        return None
                 
                 combined_btn.click(
                     fn=plot_combined,
