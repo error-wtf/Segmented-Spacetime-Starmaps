@@ -80,12 +80,52 @@ FAMOUS_OBJECTS = {
     # Exoplanet hosts
     '51 peg': {'name': '51 Pegasi', 'ra': 344.36658, 'dec': 20.76883, 'distance_ly': 50.9, 'type': 'Exoplanet Host'},
     'trappist-1': {'name': 'TRAPPIST-1', 'ra': 346.62200, 'dec': -5.04150, 'distance_ly': 39.6, 'type': 'Exoplanet Host'},
+    
+    # Star Forming Regions (for paper data)
+    'g79': {'name': 'G79 Cygnus Region', 'ra': 266.4, 'dec': -29.0, 'distance_ly': 5500, 'type': 'Star Forming Region'},
+    'cygnus x': {'name': 'Cygnus X', 'ra': 308.0, 'dec': 41.0, 'distance_ly': 4600, 'type': 'Star Forming Complex'},
+    'cygx': {'name': 'Cygnus X', 'ra': 308.0, 'dec': 41.0, 'distance_ly': 4600, 'type': 'Star Forming Complex'},
+    'cygnus': {'name': 'Cygnus X', 'ra': 308.0, 'dec': 41.0, 'distance_ly': 4600, 'type': 'Star Forming Complex'},
+    
+    # More Messier Objects
+    'm1': {'name': 'Crab Nebula (M1)', 'ra': 83.633, 'dec': 22.015, 'distance_ly': 6500, 'type': 'Supernova Remnant'},
+    'm13': {'name': 'Great Hercules Cluster (M13)', 'ra': 250.423, 'dec': 36.461, 'distance_ly': 22180, 'type': 'Globular Cluster'},
+    'm51': {'name': 'Whirlpool Galaxy (M51)', 'ra': 202.470, 'dec': 47.195, 'distance_ly': 23000000, 'type': 'Galaxy'},
+    'm57': {'name': 'Ring Nebula (M57)', 'ra': 283.396, 'dec': 33.029, 'distance_ly': 2300, 'type': 'Planetary Nebula'},
+    'm87': {'name': 'Virgo A (M87)', 'ra': 187.706, 'dec': 12.391, 'distance_ly': 53000000, 'type': 'Galaxy'},
+    'm104': {'name': 'Sombrero Galaxy (M104)', 'ra': 189.997, 'dec': -11.623, 'distance_ly': 29000000, 'type': 'Galaxy'},
+    
+    # NGC Objects
+    'ngc 1316': {'name': 'Fornax A (NGC 1316)', 'ra': 50.674, 'dec': -37.208, 'distance_ly': 62000000, 'type': 'Galaxy'},
+    'ngc 224': {'name': 'M31 / NGC 224', 'ra': 10.68471, 'dec': 41.26875, 'distance_ly': 2537000, 'type': 'Galaxy'},
+    
+    # More bright stars
+    'deneb': {'name': 'Deneb', 'ra': 310.358, 'dec': 45.280, 'distance_ly': 2615, 'type': 'Supergiant'},
+    'altair': {'name': 'Altair', 'ra': 297.696, 'dec': 8.868, 'distance_ly': 16.7, 'type': 'Main Sequence'},
+    'fomalhaut': {'name': 'Fomalhaut', 'ra': 344.413, 'dec': -29.622, 'distance_ly': 25.1, 'type': 'Main Sequence'},
+    'aldebaran': {'name': 'Aldebaran', 'ra': 68.980, 'dec': 16.509, 'distance_ly': 65.3, 'type': 'Red Giant'},
+    'antares': {'name': 'Antares', 'ra': 247.352, 'dec': -26.432, 'distance_ly': 550, 'type': 'Red Supergiant'},
+    'spica': {'name': 'Spica', 'ra': 201.298, 'dec': -11.161, 'distance_ly': 250, 'type': 'Binary Star'},
+    'regulus': {'name': 'Regulus', 'ra': 152.093, 'dec': 11.967, 'distance_ly': 79.3, 'type': 'Main Sequence'},
+    'procyon': {'name': 'Procyon', 'ra': 114.825, 'dec': 5.225, 'distance_ly': 11.5, 'type': 'Binary Star'},
+    
+    # Pulsar & Neutron Stars
+    'crab pulsar': {'name': 'PSR B0531+21 (Crab Pulsar)', 'ra': 83.633, 'dec': 22.015, 'distance_ly': 6500, 'type': 'Pulsar'},
+    'vela pulsar': {'name': 'PSR B0833-45 (Vela Pulsar)', 'ra': 128.836, 'dec': -45.176, 'distance_ly': 1000, 'type': 'Pulsar'},
+    
+    # Supernova Remnants
+    'cassiopeia a': {'name': 'Cassiopeia A', 'ra': 350.850, 'dec': 58.815, 'distance_ly': 11000, 'type': 'Supernova Remnant'},
+    'cas a': {'name': 'Cassiopeia A', 'ra': 350.850, 'dec': 58.815, 'distance_ly': 11000, 'type': 'Supernova Remnant'},
+    
+    # Magellanic Clouds
+    'lmc': {'name': 'Large Magellanic Cloud', 'ra': 80.894, 'dec': -69.756, 'distance_ly': 163000, 'type': 'Dwarf Galaxy'},
+    'smc': {'name': 'Small Magellanic Cloud', 'ra': 13.158, 'dec': -72.800, 'distance_ly': 200000, 'type': 'Dwarf Galaxy'},
 }
 
 
 def resolve_name(name_query):
     """
-    Resolve object name to coordinates.
+    Resolve object name to coordinates - WITH FUZZY MATCHING.
     
     Args:
         name_query: String (e.g., "Sag A*", "Betelgeuse", "M31")
@@ -99,11 +139,18 @@ def resolve_name(name_query):
     # Normalize query
     query_lower = name_query.strip().lower()
     
-    # Check famous objects first
+    # 1. Check exact match first
     if query_lower in FAMOUS_OBJECTS:
         return FAMOUS_OBJECTS[query_lower]
     
-    # Try SIMBAD if famous objects fail
+    # 2. Try fuzzy matching (partial match)
+    for alias, data in FAMOUS_OBJECTS.items():
+        if query_lower in alias or alias in query_lower:
+            return data
+        if query_lower in data['name'].lower():
+            return data
+    
+    # 3. Try SIMBAD if famous objects fail
     try:
         return query_simbad(name_query)
     except:

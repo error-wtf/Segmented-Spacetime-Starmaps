@@ -250,39 +250,54 @@ def create_sky_map(df, title="Sky Map", color_by='magnitude', size_by='magnitude
     else:
         size_data = [6] * len(df)
     
-    # Build DETAILED hover text with SMART OBJECT NAMES
+    # Build DETAILED hover text with SMART OBJECT NAMES + NAME RESOLVER
+    from name_resolver import FAMOUS_OBJECTS
+    
     hover_texts = []
     for idx, row in df.iterrows():
-        # SMART NAME DETECTION - try multiple name columns
+        # SMART NAME DETECTION with coordinate matching
         object_name = None
-        name_candidates = [
-            'name', 'Name', 'NAME',                    # Generic
-            'MAIN_ID', 'main_id',                      # SIMBAD
-            'designation', 'DESIGNATION',              # 2MASS, WISE
-            'source_id', 'SOURCE_ID',                  # GAIA
-            'pl_name', 'hostname',                     # Exoplanets
-            'objname', 'OBJNAME',                      # NED
-            'specobjid', 'SPECOBJID'                   # SDSS
-        ]
         
-        for name_col in name_candidates:
-            if name_col in df.columns and pd.notna(row[name_col]):
-                object_name = str(row[name_col])
+        # 1. Try coordinate matching with famous objects (within 0.1 degree)
+        ra_val = row[ra_col]
+        dec_val = row[dec_col]
+        
+        for alias, obj_data in FAMOUS_OBJECTS.items():
+            if abs(obj_data['ra'] - ra_val) < 0.1 and abs(obj_data['dec'] - dec_val) < 0.1:
+                object_name = obj_data['name']
                 break
         
-        # Fallback: create intelligent name from data
+        # 2. Try existing name columns if no match
+        if not object_name:
+            name_candidates = [
+                'name', 'Name', 'NAME',
+                'MAIN_ID', 'main_id',
+                'designation', 'DESIGNATION',
+                'common_name', 'COMMON_NAME',
+                'pl_name', 'hostname',
+                'objname', 'OBJNAME'
+            ]
+            
+            for name_col in name_candidates:
+                if name_col in df.columns and pd.notna(row[name_col]):
+                    object_name = str(row[name_col])
+                    break
+        
+        # 3. Fallback to GAIA ID (shortened for display)
         if not object_name:
             if 'source_id' in df.columns:
-                object_name = f"GAIA DR3 {row['source_id']}"
-            elif 'designation' in df.columns:
-                object_name = str(row['designation'])
-            else:
-                object_name = f"Object {idx}"
+                source_id = str(row['source_id'])
+                # Shorten very long IDs
+                if len(source_id) > 15:
+                    object_name = f"GAIA ...{source_id[-8:]}"
+                else:
+                    object_name = f"GAIA {source_id}"
         
+        # Build hover text with prominent name
         # Check if this is from our default universe (has 'type' column)
         if 'type' in df.columns:
             # BEAUTIFUL hover for universe objects
-            text = f"<b>✨ {object_name}</b><br>"
+            text = f"<b>🌟 {object_name}</b><br>"
             text += f"<b>Type:</b> {row['type']}<br>"
             if 'constellation' in df.columns:
                 text += f"<b>Constellation:</b> {row['constellation']}<br>"
@@ -304,8 +319,8 @@ def create_sky_map(df, title="Sky Map", color_by='magnitude', size_by='magnitude
         else:
             # Standard hover for catalog data - WITH SMART NAMES!
             text = f"<b>⭐ {object_name}</b><br>"
-            text += f"<b>RA:</b> {row[ra_col]:.6f}°<br>"
-            text += f"<b>Dec:</b> {row[dec_col]:.6f}°<br>"
+            text += f"<b>RA:</b> {row[ra_col]:.5f}°<br>"
+            text += f"<b>Dec:</b> {row[dec_col]:.2f}°<br>"
             
             # Add important columns first
             priority_cols = ['magnitude', 'parallax', 'pmra', 'pmdec', 'phot_g_mean_mag', 
@@ -551,38 +566,53 @@ def create_3d_sky_map(df, title="3D Sky Map"):
     y = r * np.cos(dec_rad) * np.sin(ra_rad)
     z = r * np.sin(dec_rad)
     
-    # Build detailed hover text with SMART NAMES
+    # Build detailed hover text with SMART NAMES + NAME RESOLVER
+    from name_resolver import FAMOUS_OBJECTS
+    
     hover_texts = []
     for i, (idx, row) in enumerate(df.iterrows()):
-        # SMART NAME DETECTION
+        # SMART NAME DETECTION with coordinate matching
         object_name = None
-        name_candidates = [
-            'name', 'Name', 'NAME',
-            'MAIN_ID', 'main_id',
-            'designation', 'DESIGNATION',
-            'source_id', 'SOURCE_ID',
-            'pl_name', 'hostname',
-            'objname', 'OBJNAME',
-            'specobjid', 'SPECOBJID'
-        ]
         
-        for name_col in name_candidates:
-            if name_col in df.columns and pd.notna(row[name_col]):
-                object_name = str(row[name_col])
+        # 1. Try coordinate matching with famous objects (within 0.1 degree)
+        ra_val = row[ra_col]
+        dec_val = row[dec_col]
+        
+        for alias, obj_data in FAMOUS_OBJECTS.items():
+            if abs(obj_data['ra'] - ra_val) < 0.1 and abs(obj_data['dec'] - dec_val) < 0.1:
+                object_name = obj_data['name']
                 break
         
+        # 2. Try existing name columns if no match
+        if not object_name:
+            name_candidates = [
+                'name', 'Name', 'NAME',
+                'MAIN_ID', 'main_id',
+                'designation', 'DESIGNATION',
+                'common_name', 'COMMON_NAME',
+                'pl_name', 'hostname',
+                'objname', 'OBJNAME'
+            ]
+            
+            for name_col in name_candidates:
+                if name_col in df.columns and pd.notna(row[name_col]):
+                    object_name = str(row[name_col])
+                    break
+        
+        # 3. Fallback to GAIA ID (shortened for display)
         if not object_name:
             if 'source_id' in df.columns:
-                object_name = f"GAIA DR3 {row['source_id']}"
-            elif 'designation' in df.columns:
-                object_name = str(row['designation'])
-            else:
-                object_name = f"Object {idx}"
+                source_id = str(row['source_id'])
+                # Shorten very long IDs
+                if len(source_id) > 15:
+                    object_name = f"GAIA ...{source_id[-8:]}"
+                else:
+                    object_name = f"GAIA {source_id}"
         
-        # Build hover text
-        text = f"<b>⭐ {object_name}</b><br>"
-        text += f"<b>RA:</b> {row[ra_col]:.4f}°<br>"
-        text += f"<b>Dec:</b> {row[dec_col]:.4f}°<br>"
+        # Build hover text with prominent name
+        text = f"<b>🌟 {object_name}</b><br>" if object_name else "<b>Object</b><br>"
+        text += f"<b>RA:</b> {row[ra_col]:.5f}°<br>"
+        text += f"<b>Dec:</b> {row[dec_col]:.2f}°<br>"
         if dist_col and dist_col in df.columns:
             text += f"<b>Distance:</b> {row[dist_col]:.2f} pc<br>"
         
