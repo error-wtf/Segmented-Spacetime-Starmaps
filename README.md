@@ -2,10 +2,10 @@
 
 ## 🚀 Try it Now - No Installation Required!
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Explorer_Colab.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Explorer_Gradio_Colab.ipynb)
 
 **Click the badge above** → Run all cells → Get public Gradio link in 2-3 minutes!  
-👉 [Quick Start Guide](COLAB_QUICK_START.md)
+👉 Interactive Physics Plots with Sharp Break Analysis at r_c
 
 ---
 
