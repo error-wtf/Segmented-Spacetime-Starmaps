@@ -435,6 +435,7 @@ with gr.Blocks(title="SSZ Explorer - Complete") as app:
                 
                 region_selector = gr.Dropdown(
                     choices=list(REGIONS.keys()) + ["custom"],
+                    value="cygnus_x",  # Default region
                     label="Region",
                     visible=False
                 )
@@ -540,6 +541,10 @@ When complete, the enriched database will be AUTO-SAVED!
                 max_objects = len(star_database)
                 status = f"Starting FULL DATABASE fetch ({max_objects:,} objects)...\n"
             else:
+                # Check if region is selected
+                if region is None or region == "":
+                    return "❌ Error: Please select a region first!\n\n(Switch to 'Specific Region' mode and choose a region from the dropdown)"
+                
                 if region == "custom":
                     ra, dec, radius = ra_custom, dec_custom, radius_custom
                     region_name = f"Custom ({ra:.2f}°, {dec:.2f}°)"
@@ -551,7 +556,7 @@ When complete, the enriched database will be AUTO-SAVED!
                 distances = np.sqrt((star_database['ra'] - ra)**2 + (star_database['dec'] - dec)**2)
                 region_mask = distances <= radius
                 max_objects = region_mask.sum()
-                status += f"Starting fetch for region: {region_name}\n"
+                status = f"Starting fetch for region: {region_name}\n"
                 status += f"  - Objects in region: {max_objects:,}\n"
             
             status += "\n✓ Fetch system ready\n"
