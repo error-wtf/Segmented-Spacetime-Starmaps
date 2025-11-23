@@ -65,14 +65,21 @@ def proper_time_factor(r, M, alpha=ALPHA, r_c=R_C):
 # PLOT 1: g₁/g₂ DOMAINS (Segment Density)
 # ============================================================================
 
-def create_g1_g2_domain_plot():
+def create_g1_g2_domain_plot(mass_msun=4.3e6, object_name=None):
     """
     Segment Density Ξ(r) - Showing g₁ and g₂ domains
     
     WISSENSCHAFTLICH KORREKT: γ(r) = 1 - α*exp[-(r/r_c)²]
     Uses PARSEC units for compatibility with GAIA/ESO/ALMA data
+    
+    Parameters:
+    -----------
+    mass_msun : float
+        Mass in solar masses (default: 4.3e6 for Sgr A*)
+    object_name : str, optional
+        Name for plot title
     """
-    M = 4.3e6 * M_SUN  # Sgr A* Mass
+    M = mass_msun * M_SUN  # Use parameter instead of hardcoded
     r_s = r_schwarzschild(M)
     r_s_pc = r_s / PC_TO_M  # Convert to parsec
     
@@ -107,9 +114,14 @@ def create_g1_g2_domain_plot():
     fig.add_vline(x=r_c_pc, line_dash="dash", line_color="red",
                   annotation_text=f"r_c = {r_c_pc:.2e} pc")
     
+    # Title with object name if provided
+    title_text = '<b>Segment Density Ξ(r)</b><br><sub>γ(r) = 1 - α·exp[-(r/r_c)²], α=0.12, r_c=1.9 | Units: parsec (GAIA compatible)</sub>'
+    if object_name:
+        title_text = f'<b>Segment Density Ξ(r) - {object_name}</b><br><sub>γ(r) = 1 - α·exp[-(r/r_c)²], α=0.12, r_c=1.9 | M={mass_msun:.2e} M☉</sub>'
+    
     fig.update_layout(
         title=dict(
-            text='<b>Segment Density Ξ(r)</b><br><sub>γ(r) = 1 - α·exp[-(r/r_c)²], α=0.12, r_c=1.9 | Units: parsec (GAIA compatible)</sub>',
+            text=title_text,
             x=0.5, xanchor='center', font=dict(size=18, color='white')
         ),
         xaxis=dict(
@@ -125,7 +137,7 @@ def create_g1_g2_domain_plot():
         plot_bgcolor='#0a0a1f',
         paper_bgcolor='#000010',
         font=dict(color='white'),
-        height=600
+        height=1400
     )
     
     return fig
