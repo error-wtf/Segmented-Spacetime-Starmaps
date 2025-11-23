@@ -388,7 +388,7 @@ print(f"[2/3] Database ready: {len(db):,} stars")
 print()
 
 # Erstelle Gradio Interface
-with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
+with gr.Blocks(title="SSZ Explorer - Complete") as app:
     
     gr.Markdown("""
     # 🌌 SSZ Explorer - Complete Edition
@@ -568,7 +568,9 @@ When complete, the enriched database will be AUTO-SAVED!
                 
                 return status
             except Exception as e:
-                return status + f"\n❌ Error: {e}\n"
+                import traceback
+                error_details = traceback.format_exc()
+                return status + f"\n❌ Error: {str(e)}\n\n⚠️ This is likely an astroquery server issue (IRSA/VizieR).\nThe database is safe. Try again later or use offline mode.\n"
         
         def save_enriched():
             try:
