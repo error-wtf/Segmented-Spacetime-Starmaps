@@ -18,21 +18,28 @@ G = 6.67430e-11
 C = 2.99792458e8
 M_SUN = 1.98847e30
 
-# SSZ Parameters
-ALPHA = 0.12
-R_C = 1.9  # DIMENSIONLESS
+# SSZ Parameters - CORRECT from run_ssz_validation.py
+PHI = (1 + np.sqrt(5)) / 2  # Golden ratio φ ≈ 1.618
+XI_MAX = 1.0
 
-def gamma_seg(r, r_s, alpha=ALPHA, r_c=R_C):
-    """γ(r) = 1 - α*exp[-(r/(r_c*r_s))²]"""
-    return 1 - alpha * np.exp(-(r/(r_c*r_s))**2)
+def Xi(r, r_s, xi_max=XI_MAX):
+    """CORRECT Xi formula from PAPER:
+    Xi(r) = xi_max * (1 - exp(-PHI * r / r_s))
+    
+    NO r_c parameter!
+    NO quadratic exponent!
+    PHI (golden ratio) in exponent!
+    """
+    return xi_max * (1 - np.exp(-PHI * r / r_s))
 
-def Xi(r, r_s, alpha=ALPHA, r_c=R_C):
-    """Xi(r) = 1 - γ(r)"""
-    return 1 - gamma_seg(r, r_s, alpha, r_c)
-
-def D_SSZ(r, r_s, alpha=ALPHA, r_c=R_C):
-    """D(r) = 1 / (1 + Xi(r))"""
-    return 1.0 / (1.0 + Xi(r, r_s, alpha, r_c))
+def D_SSZ(r, r_s, xi_max=XI_MAX):
+    """SSZ Time Dilation Factor:
+    D(r) = 1 / (1 + Xi(r))
+    
+    This is DIRECT, NOT D*(1-r_s/r)!
+    """
+    xi = Xi(r, r_s, xi_max)
+    return 1.0 / (1.0 + xi)
 
 def D_GR_func(r, r_s):
     """GR time dilation: D_GR(r) = √(1 - r_s/r)"""
@@ -42,60 +49,56 @@ def D_GR_func(r, r_s):
 
 def create_time_dilation_comparison(mass_msun=4.3e6, object_name="Sgr A*"):
     """
-    Plot SSZ vs GR METRIC FUNCTION A(r) = g_tt with crossover point.
+    Plot SSZ vs GR TIME DILATION FACTOR D(r) with universal crossover.
     
-    CORRECT formulas from PAPER-RESTORED:
-    - A_SSZ(r) = D(r) * (1 - r_s/r)  [Singularity-free]
-    - A_GR(r) = 1 - r_s/r             [Singular at r_s]
+    CORRECT formulas from run_ssz_validation.py:
+    - D_SSZ(r) = 1 / (1 + Xi(r))  [Singularity-free, constant ~0.5]
+    - D_GR(r) = √(1 - r_s/r)      [Singular at r_s, rises 0→1]
     
-    where D(r) = 1 / (1 + Xi(r))
+    where Xi(r) = xi_max * (1 - exp(-PHI * r / r_s))
     
-    This shows:
-    - GR: Diverges at r_s (A_GR → 0)
-    - SSZ: Smooth through r_s (A_SSZ finite)
-    - Intersection point where both agree
+    Universal crossover at r* ≈ 1.387 r_s, D* ≈ 0.528
     """
     M = mass_msun * M_SUN
     r_s = 2 * G * M / C**2
     
-    # Range: 0.1 to 10 r_s
-    r_ratio = np.linspace(0.1, 10, 1000)
+    # Range: 1.1 to 6 r_s (as per PAPER plot)
+    r_ratio = np.linspace(1.1, 6, 1000)
     r = r_ratio * r_s
     
-    # Calculate METRIC FUNCTION A(r) = g_tt
-    D_factor = D_SSZ(r, r_s)
-    A_ssz = D_factor * (1 - r_s / r)  # SSZ metric
-    A_gr = np.where(r > r_s, 1 - r_s / r, np.nan)  # GR metric
+    # Calculate TIME DILATION FACTOR D(r) DIRECTLY
+    D_ssz = D_SSZ(r, r_s)
+    D_gr = D_GR_func(r, r_s)
     
     # Find intersection (where both are valid and close)
-    valid = ~np.isnan(A_gr) & (A_gr > 0) & (A_ssz > 0)
+    valid = ~np.isnan(D_gr) & (D_gr > 0) & (D_ssz > 0)
     if np.any(valid):
-        diff = np.abs(A_ssz[valid] - A_gr[valid])
+        diff = np.abs(D_ssz[valid] - D_gr[valid])
         idx_cross = np.argmin(diff)
         r_cross_ratio = r_ratio[valid][idx_cross]
-        A_cross = A_ssz[valid][idx_cross]
+        D_cross = D_ssz[valid][idx_cross]
     else:
-        r_cross_ratio, A_cross = None, None
+        r_cross_ratio, D_cross = None, None
     
     fig = go.Figure()
     
-    # SSZ curve (cyan - singularity-free)
+    # SSZ curve (red - constant, singularity-free)
     fig.add_trace(go.Scatter(
-        x=r_ratio, y=A_ssz,
+        x=r_ratio, y=D_ssz,
         mode='lines',
-        name='A_SSZ (Finite at r=0)',
-        line=dict(color='cyan', width=3),
-        hovertemplate='r/r_s: %{x:.2f}<br>A_SSZ: %{y:.3f}<extra></extra>'
+        name='Segmented Spacetime (SSZ)',
+        line=dict(color='red', width=3),
+        hovertemplate='r/r_s: %{x:.2f}<br>D_SSZ: %{y:.3f}<extra></extra>'
     ))
     
-    # GR curve (red - singular)
-    valid_gr = ~np.isnan(A_gr) & (A_gr > 0)
+    # GR curve (blue - rises from 0 to 1)
+    valid_gr = ~np.isnan(D_gr) & (D_gr > 0)
     fig.add_trace(go.Scatter(
-        x=r_ratio[valid_gr], y=A_gr[valid_gr],
+        x=r_ratio[valid_gr], y=D_gr[valid_gr],
         mode='lines',
-        name='A_GR (Singular!)',
-        line=dict(color='red', width=2, dash='dash'),
-        hovertemplate='r/r_s: %{x:.2f}<br>A_GR: %{y:.3f}<extra></extra>'
+        name='General Relativity',
+        line=dict(color='blue', width=2),
+        hovertemplate='r/r_s: %{x:.2f}<br>D_GR: %{y:.3f}<extra></extra>'
     ))
     
     # Schwarzschild radius
@@ -108,39 +111,39 @@ def create_time_dilation_comparison(mass_msun=4.3e6, object_name="Sgr A*"):
     # Intersection/Crossover
     if r_cross_ratio is not None:
         fig.add_trace(go.Scatter(
-            x=[r_cross_ratio], y=[A_cross],
+            x=[r_cross_ratio], y=[D_cross],
             mode='markers',
-            name=f'Crossover r* = {r_cross_ratio:.3f} r_s',
-            marker=dict(color='lime', size=18, symbol='star',
-                       line=dict(color='darkgreen', width=2)),
-            hovertemplate=f'Crossover<br>r*: {r_cross_ratio:.3f} r_s<br>A*: {A_cross:.3f}<extra></extra>'
+            name=f'Intersection r*/r_s = {r_cross_ratio:.3f}',
+            marker=dict(color='green', size=10),
+            hovertemplate=f'Crossover<br>r*: {r_cross_ratio:.3f} r_s<br>D*: {D_cross:.3f}<extra></extra>'
         ))
         
         fig.add_annotation(
-            x=r_cross_ratio, y=A_cross + 0.05,
-            text=f"<b>CROSSOVER</b><br>r* = {r_cross_ratio:.3f} r_s<br>A* = {A_cross:.3f}",
-            showarrow=True, arrowhead=2, arrowcolor='lime', arrowwidth=2,
-            bgcolor='rgba(0,0,0,0.8)', font=dict(color='lime', size=12),
-            bordercolor='lime', borderwidth=2
+            x=r_cross_ratio, y=D_cross,
+            text=f"r* = {r_cross_ratio:.3f} r_s<br>D* = {D_cross:.3f}",
+            showarrow=True, arrowhead=2, arrowcolor='green', arrowwidth=2,
+            bgcolor='rgba(0,0,0,0.8)', font=dict(color='white', size=11),
+            bordercolor='green', borderwidth=2,
+            ax=-50, ay=-40
         )
     
     fig.update_layout(
         title=dict(
-            text=f"<b>GR vs SSZ Metric Function A(r) - Universal Crossover</b><br>" +
-                 f"<sub>{object_name} | M = {mass_msun:.2e} M☉ | r_c = {R_C} | A_SSZ = D(r)·(1-r_s/r) finite!</sub>",
+            text=f"<b>GR vs SSZ Time Dilation - Universal Crossover</b><br>" +
+                 f"<sub>{object_name} | M = {mass_msun:.2e} M☉ | Xi(r) = (1-exp(-φ·r/r_s)) | φ={PHI:.3f}</sub>",
             x=0.5, xanchor='center'
         ),
         xaxis=dict(
-            title='<b>Radius (r / r_s)</b>',
+            title='<b>r / r_s</b>',
             gridcolor='rgba(255,255,255,0.2)',
             zerolinecolor='rgba(255,255,255,0.3)',
-            range=[0, 10]
+            range=[1.1, 6]
         ),
         yaxis=dict(
-            title='<b>Metric Function A(r) = g_tt</b>',
+            title='<b>Time Dilation D(r)</b>',
             gridcolor='rgba(255,255,255,0.2)',
             zerolinecolor='rgba(255,255,255,0.3)',
-            range=[-0.1, 1.1]
+            range=[0.2, 1.0]
         ),
         template='plotly_dark',
         plot_bgcolor='rgba(0,0,0,0.9)',
