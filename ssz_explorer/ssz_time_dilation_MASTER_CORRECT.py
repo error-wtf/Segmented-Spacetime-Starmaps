@@ -129,23 +129,26 @@ def create_time_dilation_comparison(mass_msun=4.3e6, object_name="Sgr A*"):
         ),
         xaxis=dict(
             title='<b>Radius (r / r_s)</b>',
-            gridcolor='rgba(200,200,200,0.3)',
+            gridcolor='rgba(255,255,255,0.2)',
+            zerolinecolor='rgba(255,255,255,0.3)',
             range=[0, 10]
         ),
         yaxis=dict(
             title='<b>Time Dilation Factor D(r)</b>',
-            gridcolor='rgba(200,200,200,0.3)',
+            gridcolor='rgba(255,255,255,0.2)',
+            zerolinecolor='rgba(255,255,255,0.3)',
             range=[0, 1.1]
         ),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        font=dict(color='black', size=12),
+        template='plotly_dark',
+        plot_bgcolor='rgba(0,0,0,0.9)',
+        paper_bgcolor='rgb(17,17,17)',
+        font=dict(color='white', size=12),
         height=600,
         showlegend=True,
         legend=dict(
             x=0.02, y=0.98,
-            bgcolor='rgba(255,255,255,0.95)',
-            bordercolor='black', borderwidth=1
+            bgcolor='rgba(0,0,0,0.8)',
+            bordercolor='white', borderwidth=1
         )
     )
     
