@@ -302,7 +302,11 @@ def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1
     r_linear = np.linspace(r_min_pc, r_max_pc, 500)
     gamma_linear = np.array([gamma_seg(r*PC_TO_M, r_s, ALPHA, R_C) for r in r_linear])
     dgamma_dr_linear = np.gradient(gamma_linear, r_linear)
-    collapse_rate_linear = -dgamma_dr_linear / np.max(np.abs(dgamma_dr_linear))  # Normalized
+    max_gradient = np.max(np.abs(dgamma_dr_linear))
+    if max_gradient > 0:
+        collapse_rate_linear = -dgamma_dr_linear / max_gradient
+    else:
+        collapse_rate_linear = np.zeros_like(dgamma_dr_linear)
     
     # PIECEWISE LINEAR FITS
     mask_g2 = r_data_pc < r_c_eff_pc
@@ -361,6 +365,9 @@ def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1
                  label=f'g₁ fit: slope={slope_g1:.2e}', zorder=5)
     
     ax1.set_xscale('log')
+    from matplotlib.ticker import ScalarFormatter
+    ax1.xaxis.set_major_formatter(ScalarFormatter())
+    ax1.ticklabel_format(style='scientific', axis='x', scilimits=(0,0))
     ax1.set_xlabel('Radius [pc]', fontsize=13, color='white', fontweight='bold')
     ax1.set_ylabel('γ(r) = Segmentation Field', fontsize=13, color='white', fontweight='bold')
     ax1.set_title(f'Segmentation Field γ(r): Sharp Break at r_c - {object_name}',
@@ -379,6 +386,9 @@ def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1
     ax2.axhline(0, color='white', linestyle=':', linewidth=1, alpha=0.5)
     
     ax2.set_xscale('log')
+    from matplotlib.ticker import ScalarFormatter
+    ax2.xaxis.set_major_formatter(ScalarFormatter())
+    ax2.ticklabel_format(style='scientific', axis='x', scilimits=(0,0))
     ax2.set_xlabel('Radius [pc]', fontsize=13, color='white', fontweight='bold')
     ax2.set_ylabel('Collapse Rate C(r)', fontsize=13, color='white', fontweight='bold')
     ax2.set_title('Collapse Rate from -dγ/dr (high in g₂, low in g₁)',
@@ -428,12 +438,15 @@ def create_combined_analysis_png(object_name="Sgr A*", mass_msun=1.0, distance_p
     axes = axes.flatten()
     
     # Apply dark style to all panels
+    from matplotlib.ticker import ScalarFormatter
     for i, ax in enumerate(axes):
         ax.set_facecolor('#000010')
         ax.axvspan(r_min_pc, r_c_pc, alpha=0.1, color='red')
         ax.axvspan(r_c_pc, r_max_pc, alpha=0.1, color='green')
         ax.axvline(r_c_pc, color='red', linestyle='--', linewidth=1.5, alpha=0.7, zorder=5)
         ax.set_xscale('log')
+        ax.xaxis.set_major_formatter(ScalarFormatter())
+        ax.ticklabel_format(style='scientific', axis='x', scilimits=(0,0))
         ax.grid(True, alpha=0.3, color='gray', linestyle=':', linewidth=0.5)
         ax.tick_params(colors='white', labelsize=10)
     

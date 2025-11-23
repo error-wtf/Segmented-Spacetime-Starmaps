@@ -537,6 +537,8 @@ When complete, the enriched database will be AUTO-SAVED!
                 return "❌ Fetch system not available!"
             
             # Determine fetch range
+            status = ""  # Initialize status
+            
             if mode == "all":
                 max_objects = len(star_database)
                 status = f"Starting FULL DATABASE fetch ({max_objects:,} objects)...\n"
