@@ -20,9 +20,9 @@ C = 2.99792458e8
 M_SUN = 1.98847e30
 PC_TO_M = 3.0857e16
 
-# SSZ Parameters
+# SSZ Parameters (EXACT from PAPER-RESTORED)
 ALPHA = 0.12
-R_C = 1.9  # pc
+R_C = 1.9  # dimensionless scale factor (NOT parsecs!)
 
 def r_schwarzschild(M):
     """Schwarzschild radius"""
@@ -30,17 +30,16 @@ def r_schwarzschild(M):
 
 def gamma_seg(r, r_s, alpha=ALPHA, r_c=R_C):
     """
-    Temporal density function (from PAPER-RESTORED ssz_core_functions.py)
+    Segmentation field (EXACT from PAPER-RESTORED ssz_core_functions.py)
     γ(r) = 1 - α·exp[-(r/(r_c·r_s))²]
     
     Args:
         r: radius in meters
         r_s: Schwarzschild radius in meters
         alpha: segmentation parameter (default 0.12)
-        r_c: critical radius scale in parsec (default 1.9 pc)
+        r_c: dimensionless critical radius scale (default 1.9)
     """
-    r_c_meters = r_c * PC_TO_M
-    return 1.0 - alpha * np.exp(-(r / (r_c_meters * r_s))**2)
+    return 1.0 - alpha * np.exp(-(r / (r_c * r_s))**2)
 
 def Xi(r, r_s, alpha=ALPHA, r_c=R_C):
     """
