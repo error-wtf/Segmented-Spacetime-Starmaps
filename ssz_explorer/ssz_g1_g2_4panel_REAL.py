@@ -79,8 +79,9 @@ def create_g1_g2_temperature_plot(mass_msun=4.3e6,object_name="Sgr A*"):
     fig.add_trace(go.Scatter(x=r,y=resid,mode='markers',name='σ',
                             marker=dict(color='purple',size=8)),row=2,col=2)
     fig.add_hline(y=0,line=dict(color='white',dash='dot',width=1),row=2,col=2)
-    std=np.std(resid)
-    fig.add_annotation(text=f"σ = {std:.2f} K",x=r.mean(),y=resid.max()*0.8,
+    std=np.std(resid) if len(resid)>1 else 0.0
+    y_ann=max(abs(resid.max()),abs(resid.min()))*0.7
+    fig.add_annotation(text=f"σ = {std:.2f} K",x=r.mean(),y=y_ann,
                       bgcolor='purple',font=dict(color='white'),row=2,col=2)
     
     # Axes

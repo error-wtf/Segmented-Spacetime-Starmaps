@@ -32,7 +32,7 @@ from pathlib import Path
 
 # Core modules (getestet & funktionierend!)
 from star_map_generator import create_sky_map, create_3d_sky_map, create_default_universe
-from ssz_time_dilation_crossover import create_time_dilation_comparison
+from ssz_time_dilation_crossover_CORRECT import create_time_dilation_comparison
 from ssz_physics_plots_matplotlib import (
     create_radial_stretch_png,
     create_combined_analysis_png
