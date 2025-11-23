@@ -109,7 +109,8 @@ Open `http://localhost:7860` in your browser.
 **Want to contribute?** Pull requests welcome!
 
 **Authors:** Carmen Wrede, Lino Casu, Bingsi  
-**License:** ACSL v1.4  
+**License:** Anti-Capitalist Software License (ACSL) v1.4  
+**Contact:** mail@error.wtf  
 **Repository:** https://github.com/error-wtf/Segmented-Spacetime-Starmaps
 
 ---

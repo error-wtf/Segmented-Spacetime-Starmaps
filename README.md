@@ -375,24 +375,31 @@ For more information, see:
 
 ---
 
-## License
+## 📜 License
 
-© 2025 Carmen Wrede, Lino Casu
+© 2025 Carmen Wrede, Lino Casu, Bingsi
 
-(Add your preferred license here - e.g., Anti-Capitalist Software License, MIT, GPL, etc.)
+This software is licensed under the **Anti-Capitalist Software License (ACSL) v1.4**.
+
+**Summary:**
+- ✅ Free for individuals, non-profits, educational institutions
+- ✅ Free for worker cooperatives and collectives
+- ❌ Not for use by capitalist corporations or law enforcement
+- ❌ Not for military applications
+
+See [LICENSE](LICENSE) file for full terms.
 
 ---
 
-## Contact
+## 📧 Contact
 
 For questions, contributions, or collaboration:
 
-- **Carmen Wrede**: [Contact info]
-- **Lino Casu**: [Contact info]
-- **GitHub**: [Repository URL]
+📬 **Email:** mail@error.wtf  
+🐙 **GitHub:** https://github.com/error-wtf/Segmented-Spacetime-Starmaps
 
 ---
 
-**Status**: Experimental / Proof of Concept  
-**Version**: 0.1.0  
-**Last Updated**: 2025-01-22
+**Status**: Production Ready  
+**Version**: 1.0.0  
+**Last Updated**: November 2025
