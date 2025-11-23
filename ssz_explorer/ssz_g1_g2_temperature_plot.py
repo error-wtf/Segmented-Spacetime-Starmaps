@@ -1,9 +1,0 @@
-import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-G,C,M_SUN,PC_TO_M,ALPHA,R_C=6.67430e-11,2.99792458e8,1.98847e30,3.0857e16,0.12,1.9
-r_schwarzschild=lambda M:2*G*M/C**2
-def create_g1_g2_temperature_plot(mass_msun=4.3e6,object_name='Sgr A*'):
-    r_s_pc=r_schwarzschild(mass_msun*M_SUN)/PC_TO_M;r_c=R_C*r_s_pc;r_min,r_max=r_c*0.2,r_c*2.5;r=np.linspace(r_min,r_max,50);T=np.where(r<r_c,80-40*(r/r_c),40-20*((r-r_c)/(r_max-r_c)));m2,m1=r<r_c,r>=r_c;p2,p1=np.polyfit(r[m2],T[m2],1),np.polyfit(r[m1],T[m1],1);fig=make_subplots(rows=2,cols=2,subplot_titles=('Temp','Burst','Detect','Resid'),vertical_spacing=0.15,horizontal_spacing=0.12)
-    for i,j in [(1,1),(1,2),(2,1),(2,2)]:fig.add_vrect(x0=r_min,x1=r_c,fillcolor='red',opacity=0.15,layer='below',row=i,col=j,line_width=0);fig.add_vrect(x0=r_c,x1=r_max,fillcolor='green',opacity=0.15,layer='below',row=i,col=j,line_width=0);fig.add_vline(x=r_c,line=dict(color='white',width=2),row=i,col=j)
-    fig.add_trace(go.Scatter(x=r[m2],y=T[m2],mode='markers+lines',marker=dict(color='red',size=8),line=dict(color='red')),row=1,col=1);fig.add_trace(go.Scatter(x=r[m1],y=T[m1],mode='markers+lines',marker=dict(color='lime',size=8),line=dict(color='lime'),showlegend=False),row=1,col=1);t=np.linspace(0,10,200);fig.add_trace(go.Scatter(x=t,y=np.where(np.abs(t-3)<0.1,1.2*np.exp(-50*(t-3)**2),0),line=dict(color='cyan'),fill='tozeroy'),row=1,col=2);m=np.linspace(r_min,r_max,100);fig.add_trace(go.Scatter(x=m,y=np.where(m<r_c,0.9,0.95),line=dict(color='orange')),row=2,col=1);fig.add_trace(go.Scatter(x=r,y=np.random.normal(0,0.5,50),mode='markers',marker=dict(color='purple')),row=2,col=2);fig.update_xaxes(gridcolor='rgba(100,100,150,0.3)');fig.update_yaxes(gridcolor='rgba(100,100,150,0.3)');fig.update_layout(title_text=f'<b>{object_name}</b>',height=900,plot_bgcolor='#0a0a1f',paper_bgcolor='#000010',font=dict(color='white'));return fig

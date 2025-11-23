@@ -30,14 +30,14 @@ import numpy as np
 import plotly.graph_objects as go
 from pathlib import Path
 
-# Core modules (getestet & funktionierend!)
+# Core modules (MASTER CORRECT VERSIONS!)
 from star_map_generator import create_sky_map, create_3d_sky_map, create_default_universe
-from ssz_time_dilation_crossover_CORRECT import create_time_dilation_comparison
+from ssz_time_dilation_MASTER_CORRECT import create_time_dilation_comparison
 from ssz_physics_plots_matplotlib import (
     create_radial_stretch_png,
     create_combined_analysis_png
 )
-from ssz_g1_g2_4panel_REAL import create_g1_g2_temperature_plot
+from ssz_g1_g2_MASTER_CORRECT import create_g1_g2_plot
 
 # Import unified data fetcher
 try:
@@ -948,10 +948,10 @@ When complete, the enriched database will be AUTO-SAVED!
                         if selected_object is not None:
                             mass_msun = selected_object.get('mass_msun', 1.0)
                             obj_name = selected_object.get('name', f"ID:{selected_object.get('source_id', 'unknown')}")
-                            fig = create_g1_g2_temperature_plot(mass_msun=mass_msun, object_name=obj_name)
+                            fig = create_g1_g2_plot(mass_msun=mass_msun, object_name=obj_name)
                         else:
                             # Default: Sgr A*
-                            fig = create_g1_g2_temperature_plot(mass_msun=4.3e6, object_name="Sgr A*")
+                            fig = create_g1_g2_plot(mass_msun=4.3e6, object_name="Sgr A*")
                     except Exception as e:
                         print(f"ERROR in g1/g2 plot: {e}")
                         import traceback
