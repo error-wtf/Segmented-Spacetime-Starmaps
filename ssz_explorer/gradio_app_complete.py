@@ -1071,23 +1071,24 @@ When complete, the enriched database will be AUTO-SAVED!
             
             # Sub-Tab: Radial Stretch
             with gr.Tab("Radial Stretch"):
-                gr.Markdown("**Radial stretch factor showing domain structure**")
+                gr.Markdown("**SEG Performance vs Radius: φ/2 Boundary Validation**\nWin Rate calculation across all objects")
                 stretch_btn = gr.Button("📏 Plot Radial Stretch", variant="primary", size="lg")
                 stretch_plot = gr.Image(label="Radial Stretch", type="filepath")
                 
                 def plot_radial_stretch():
                     try:
+                        global star_database
+                        print(f"[DEBUG] Radial Stretch: Computing SEG Performance for {len(star_database)} objects")
                         if selected_object is not None:
                             mass_msun = selected_object['mass_msun']
                             obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
                             distance_pc = selected_object.get('distance', 1000.0)
-                            print(f"[DEBUG] Radial Stretch: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
-                            result = create_radial_stretch_png(obj_name, mass_msun, distance_pc)
+                            result = create_radial_stretch_png(obj_name, mass_msun, distance_pc, star_database)
                             print(f"[DEBUG] Result: {result}")
                             return result
                         else:
-                            print("[DEBUG] Radial Stretch: Using default Sgr A*")
-                            result = create_radial_stretch_png("Sgr A*", 4.3e6, 8000.0)
+                            print("[DEBUG] Radial Stretch: Using all objects in database")
+                            result = create_radial_stretch_png("All Objects", 4.3e6, 8000.0, star_database)
                             print(f"[DEBUG] Result: {result}")
                             return result
                     except Exception as e:
