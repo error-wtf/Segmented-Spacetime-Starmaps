@@ -43,6 +43,9 @@ Thumbs.db
 ssz_exports/*.html
 reports/*.html
 
+# Runtime plot generation (Matplotlib outputs)
+ssz_explorer/plots/*.png
+
 # Data files (uncomment to ignore large catalogs)
 # data/
 # *.csv
