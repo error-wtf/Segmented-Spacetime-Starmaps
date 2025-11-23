@@ -134,10 +134,10 @@ def create_g1_g2_domain_plot():
 # PLOT 2: METRIC FUNCTION A(r)
 # ============================================================================
 
-def create_time_dilation_comparison():
-    """WISSENSCHAFTLICH KORREKT: Metric Function A(r) - SSZ vs GR
+def create_time_dilation_comparison_OLD_DEPRECATED():
+    """DEPRECATED - USE ssz_time_dilation_MASTER_CORRECT instead!
     
-    Zeigt die Metrik-Funktion die NICHT singulär ist bei r=0!
+    OLD VERSION: Metric Function A(r) - SSZ vs GR
     """
     M = 4.3e6 * M_SUN  # Sgr A* Mass
     r_s = r_schwarzschild(M)
@@ -372,8 +372,8 @@ if __name__ == "__main__":
     fig1 = create_g1_g2_domain_plot()
     print("[OK] Segment Density Xi(r)")
     
-    fig2 = create_time_dilation_comparison()
-    print("[OK] Metric Function A(r)")
+    fig2 = create_time_dilation_comparison_OLD_DEPRECATED()
+    print("[OK] Metric Function A(r) [DEPRECATED]")
     
     fig3 = create_radial_stretch_plot()
     print("[OK] Proper Time dtau/dt")
