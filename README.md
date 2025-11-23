@@ -1,12 +1,21 @@
 # SSZ Explorer - Segmented Spacetime Space Explorer
 
+## 🚀 Try it Now - No Installation Required!
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Explorer_Colab.ipynb)
+
+**Click the badge above** → Run all cells → Get public Gradio link in 2-3 minutes!  
+👉 [Quick Start Guide](COLAB_QUICK_START.md)
+
+---
+
 **Advanced astronomical data explorer with Segmented Spacetime (SSZ) physics! (v1.0.0)**
 
 Python package for exploring 3.2 billion+ astronomical objects with **ECHTE** Segmented Spacetime (SSZ) metric corrections based on the Casu & Wrede framework.
 
 **KEINE FAKE-LOGIK!** Basiert auf der exakten SSZ-Physik.
 
-© 2025 Carmen Wrede, Lino Casu  
+© 2025 Carmen Wrede, Lino Casu, Bingsi  
 Licensed under the Anti-Capitalist Software License v1.4
 
 ---
