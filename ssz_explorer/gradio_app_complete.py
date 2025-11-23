@@ -24,14 +24,11 @@ if sys.platform == 'win32':
 # ============================================================================
 # IMPORTS - Nur funktionierende Module!
 # ============================================================================
-from pathlib import Path
 import gradio as gr
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from astropy.coordinates import SkyCoord
-from astropy import units as u
+from pathlib import Path
 
 # Core modules (getestet & funktionierend!)
 from star_map_generator import create_sky_map, create_3d_sky_map, create_default_universe
@@ -41,6 +38,20 @@ from ssz_physics_plots import (
     create_radial_stretch_plot,
     create_combined_ssz_analysis
 )
+
+# Import unified data fetcher
+try:
+    from unified_data_fetcher import (
+        enrich_object_data, 
+        enrich_database, 
+        save_enriched_database,
+        get_enrichment_stats
+    )
+    ENRICHMENT_AVAILABLE = True
+except ImportError:
+    ENRICHMENT_AVAILABLE = False
+    print("⚠ Unified data fetcher not available")
+
 from name_resolver import resolve_name, search_by_name_fuzzy, get_famous_objects_list
 
 # ============================================================================
@@ -51,36 +62,73 @@ star_database = None  # Wird beim Start geladen
 last_query_data = None  # Für CSV Export
 selected_object = None  # Aktuell selektiertes Objekt
 selected_object_index = None  # Index des selektierten Objekts
-selected_object_name = None  # Name des selektierten Objekts (für Physics Plots)
 
 # ============================================================================
 # DATENBANK-FUNKTIONEN
 # ============================================================================
 
 def load_star_database():
-    """Lade 500k Sterne Datenbank."""
+    """Load star database - enriched if available, otherwise base 500k/50k."""
     global star_database
     
     if star_database is not None:
         return star_database
     
-    # Try enhanced database first (with ALMA/AKARI/etc)
-    enhanced_path = Path(__file__).parent / "ssz_data" / "star_database_enhanced.csv"
-    if enhanced_path.exists():
-        db_path = enhanced_path
-        print(f"[INFO] Loading ENHANCED database with multi-catalog data: {db_path}")
-    else:
-        db_path = Path(__file__).parent / "ssz_data" / "star_database_50k.csv"
-        print(f"[INFO] Loading standard GAIA database: {db_path}")
+    enriched_file = Path(__file__).parent / "ssz_data" / "star_database_enriched.csv"
+    database_file_500k = Path(__file__).parent / "ssz_data" / "star_database_500k.csv"
+    database_file_50k = Path(__file__).parent / "ssz_data" / "star_database_50k.csv"
     
-    # Try 500k first, fallback to 50k
-    database_file_500k = Path(__file__).parent / 'ssz_data' / 'star_database_500k.csv'
-    database_file_50k = Path(__file__).parent / 'ssz_data' / 'star_database_50k.csv'
+    # Priority 1: Load enriched database if exists
+    if enriched_file.exists():
+        print(f"[INFO] Loading ENRICHED database: {enriched_file}")
+        star_database = pd.read_csv(enriched_file)
+        print(f"[INFO] Loaded {len(star_database):,} stars (enriched)")
+        
+        # Show enrichment stats
+        if ENRICHMENT_AVAILABLE:
+            stats = get_enrichment_stats(star_database)
+            print(f"[INFO] Enrichment stats:")
+            print(f"       - Temperature data: {stats['with_temperature']}")
+            print(f"       - Spectroscopy data: {stats['with_spectroscopy']}")
+        
+        return star_database
     
+    # Priority 2: Load base 500k database and START BACKGROUND ENRICHMENT
     if database_file_500k.exists():
         print(f"[INFO] Loading 500k database: {database_file_500k}")
         star_database = pd.read_csv(database_file_500k)
         print(f"[INFO] Loaded {len(star_database):,} stars")
+        
+        # Start background enrichment thread - FULLY PROTECTED
+        if ENRICHMENT_AVAILABLE:
+            import threading
+            
+            def background_enrich():
+                """Background enrichment with COMPLETE error protection"""
+                global star_database
+                try:
+                    print("[BACKGROUND] Starting full database enrichment...")
+                    star_database = enrich_database(star_database, max_objects=len(star_database))
+                    
+                    # Auto-save when complete
+                    print("[BACKGROUND] Saving enriched database...")
+                    if save_enriched_database(star_database, enriched_file):
+                        print("[BACKGROUND] ✓ Enriched database saved! Next startup will be instant!")
+                    else:
+                        print("[BACKGROUND] ✗ Failed to save enriched database")
+                except KeyboardInterrupt:
+                    print("[BACKGROUND] ⚠️  Enrichment cancelled by user")
+                except Exception as e:
+                    print(f"[BACKGROUND] ❌ ERROR: {e}")
+                    import traceback
+                    traceback.print_exc()
+                finally:
+                    print("[BACKGROUND] Thread terminated")
+            
+            thread = threading.Thread(target=background_enrich, daemon=True)
+            thread.start()
+            print("[INFO] Background enrichment started (will save when complete)")
+        
         return star_database
     elif database_file_50k.exists():
         print(f"[INFO] Loading 50k database: {database_file_50k}")
@@ -130,38 +178,19 @@ def generate_sky_map():
 
 
 def generate_3d_sky_map():
-    """Generate 3D sky map - OPTIMIZED for performance."""
+    """Generate 3D sky map with 50k database."""
     global last_query_data
     
-    try:
-        # Use query data if available, otherwise use database
-        if last_query_data is not None and not last_query_data.empty:
-            data = last_query_data
-        else:
-            data = load_star_database()
-        
-        # FAST MODE: Only 1000 stars for quick rendering
-        if len(data) > 1000:
-            import random
-            indices = sorted(random.sample(range(len(data)), 1000))
-            data_sample = data.iloc[indices].copy()
-        else:
-            data_sample = data.copy()
-        
-        return create_3d_sky_map(
-            data_sample,
-            title=f"🌌 3D Sky Map - {len(data):,} Total ({len(data_sample):,} shown)<br><sub>GAIA DR3 - Sampled for performance</sub>"
-        )
-    except Exception as e:
-        # Return empty plot with error message
-        import plotly.graph_objects as go
-        fig = go.Figure()
-        fig.add_annotation(
-            text=f"Error generating 3D map: {str(e)}<br>Try using fewer stars or check data format",
-            xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False,
-            font=dict(size=14, color="red")
-        )
-        return fig
+    # Use query data if available, otherwise use database
+    if last_query_data is not None and not last_query_data.empty:
+        data = last_query_data
+    else:
+        data = load_star_database()
+    
+    return create_3d_sky_map(
+        data,
+        title=f"🌌 3D Sky Map - {len(data):,} Stars<br><sub>GAIA DR3</sub>"
+    )
 
 
 def generate_constellation_map(ra, dec, fov):
@@ -169,15 +198,11 @@ def generate_constellation_map(ra, dec, fov):
     try:
         db = load_star_database()
         
-        # Validate inputs
-        try:
-            ra_val = float(ra) if ra else 266.4
-            dec_val = float(dec) if dec else -29.0
-            fov_val = float(fov) if fov else 30.0
-        except (ValueError, TypeError):
-            raise ValueError("Invalid coordinates - must be numbers")
-        
         # Filter to region
+        ra_val = float(ra)
+        dec_val = float(dec)
+        fov_val = float(fov)
+        
         half_fov = fov_val / 2
         mask = (
             (db['ra'] >= ra_val - half_fov) &
@@ -191,41 +216,21 @@ def generate_constellation_map(ra, dec, fov):
         if len(region_data) == 0:
             fig = go.Figure()
             fig.add_annotation(
-                text=f"❌ No stars found in region<br>RA={ra_val:.1f}°, Dec={dec_val:.1f}°, FOV={fov_val:.1f}°<br><br>Try different coordinates or larger FOV",
-                xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False,
-                font=dict(size=14, color="orange")
-            )
-            fig.update_layout(
-                template="plotly_dark",
-                paper_bgcolor='#0a0a1f',
-                plot_bgcolor='#000010'
+                text=f"No stars in region\nRA={ra_val}°, Dec={dec_val}°, FOV={fov_val}°",
+                xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False
             )
             return fig
         
-        # Limit to 500 stars for performance
-        if len(region_data) > 500:
-            import random
-            indices = sorted(random.sample(range(len(region_data)), 500))
-            region_data = region_data.iloc[indices].copy()
-        
         return create_3d_sky_map(
             region_data,
-            title=f"📍 Region View: RA={ra_val:.1f}°, Dec={dec_val:.1f}° (FOV={fov_val:.1f}°)<br>"
-                  f"<sub>{len(region_data)} stars shown (sampled for performance)</sub>"
+            title=f"Region: RA={ra_val:.1f}°, Dec={dec_val:.1f}° (FOV={fov_val}°)<br>"
+                  f"<sub>{len(region_data)} stars from {len(db):,} database</sub>"
         )
         
     except Exception as e:
-        import plotly.graph_objects as go
         fig = go.Figure()
         fig.add_annotation(
-            text=f"❌ Error: {str(e)}<br><br>Check coordinates and try again",
-            xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False,
-            font=dict(size=14, color="red")
-        )
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor='#0a0a1f',
-            plot_bgcolor='#000010'
+            text=f"Error: {e}", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False
         )
         return fig
 
@@ -260,41 +265,13 @@ def download_csv():
 # ============================================================================
 
 def search_object(search_term):
-    """Suche nach Objekten in der Datenbank."""
-    if not search_term or search_term.strip() == "":
-        return [], "Enter search term (name, coordinates, or source_id)"
-    
-    # SPECIAL TEST OBJECTS for extreme comparisons
-    if search_term.strip().lower().startswith('test:'):
-        test_name = search_term.strip()[5:].strip().lower()
-        test_objects = {
-            'sun': {'name': 'Test: Sun', 'mass': 1.0, 'dist': 1.0},
-            'neutron': {'name': 'Test: Neutron Star', 'mass': 2.0, 'dist': 100.0},
-            'sgr a*': {'name': 'Test: Sgr A* (Real)', 'mass': 4.3e6, 'dist': 8000.0},
-            'm87*': {'name': 'Test: M87* Black Hole', 'mass': 6.5e9, 'dist': 16.8e6},
-            'small': {'name': 'Test: Small Star (0.5 M☉)', 'mass': 0.5, 'dist': 10.0},
-            'giant': {'name': 'Test: Giant Star (20 M☉)', 'mass': 20.0, 'dist': 500.0}
-        }
-        if test_name in test_objects:
-            obj = test_objects[test_name]
-            # Return as special format: "NAME|test:TYPE"
-            return [(f"{obj['name']} | M={obj['mass']:.1e} M☉ | d={obj['dist']:.1f} pc", f"test:{test_name}")], \
-                   f"✅ Test object: {obj['name']}"
-        else:
-            available = ', '.join(test_objects.keys())
-            return [], f"💡 Available test objects: test:{available}"
-    
+    """Suche nach Objekt in Datenbank - jetzt auch mit Namen!"""
     db = load_star_database()
-    search_term = search_term.strip().lower()
     
-    # Smart preprocessing: "79" -> "G79", "87" -> "M87", etc.
-    if search_term.isdigit():
-        # Try common prefixes
-        for prefix in ['G', 'M', 'NGC ']:
-            name_result = resolve_name(prefix + search_term)
-            if name_result:
-                search_term = prefix + search_term
-                break
+    if not search_term or search_term.strip() == "":
+        return [], "Enter search term (e.g., 'Sag A*', coordinates, or source_id)"
+    
+    search_term = search_term.strip()
     
     # Try name resolution first
     name_result = resolve_name(search_term)
@@ -307,14 +284,11 @@ def search_object(search_term):
         nearest_idx = np.argmin(distances)
         
         obj = db.iloc[nearest_idx]
-        
-        # WICHTIG: Speichere den GESUCHTEN Namen, nicht den GAIA Namen!
-        # Format: "NAME|INDEX" so dass wir später wissen welcher Name gesucht wurde
         result = [(
             f"🌟 {name_result['name']} | RA:{obj['ra']:.2f}° Dec:{obj['dec']:.2f}° | {obj['distance_ly']:.1f}ly",
-            f"{name_result['name']}|{int(nearest_idx)}"  # ← GEÄNDERT: Name + Index
+            int(nearest_idx)
         )]
-        return result, f"✅ Found: {name_result['name']} ({name_result['type']}) - Distance to nearest star: {distances[nearest_idx]:.4f}°"
+        return result, f"✅ Found: {name_result['name']} ({name_result['type']})"
     
     # Try parsing as coordinates (RA, Dec)
     if ',' in search_term:
@@ -364,105 +338,23 @@ def search_object(search_term):
     return [], f"❌ No objects found for: {search_term}\n💡 Try: 'Sag A*', 'Betelgeuse', 'M31', or coordinates"
 
 
-def select_object(obj_index_or_combo):
-    """Selektiere ein Objekt."""
-    global selected_object, selected_object_index, selected_object_name
-    
-    if obj_index_or_combo is None:
-        selected_object = None
-        selected_object_index = None
-        selected_object_name = None
-        return "No object selected"
-    
-    # Handle TEST objects
-    if isinstance(obj_index_or_combo, str) and obj_index_or_combo.startswith('test:'):
-        test_name = obj_index_or_combo[5:]
-        test_objects = {
-            'sun': {'name': 'Test: Sun', 'mass': 1.0, 'dist': 1.0, 'source_id': 'TEST_SUN'},
-            'neutron': {'name': 'Test: Neutron Star', 'mass': 2.0, 'dist': 100.0, 'source_id': 'TEST_NEUTRON'},
-            'sgr a*': {'name': 'Test: Sgr A* (Real)', 'mass': 4.3e6, 'dist': 8000.0, 'source_id': 'TEST_SGRA'},
-            'm87*': {'name': 'Test: M87* Black Hole', 'mass': 6.5e9, 'dist': 16.8e6, 'source_id': 'TEST_M87'},
-            'small': {'name': 'Test: Small Star (0.5 M☉)', 'mass': 0.5, 'dist': 10.0, 'source_id': 'TEST_SMALL'},
-            'giant': {'name': 'Test: Giant Star (20 M☉)', 'mass': 20.0, 'dist': 500.0, 'source_id': 'TEST_GIANT'}
-        }
-        obj = test_objects[test_name]
-        selected_object_name = obj['name']
-        selected_object_index = -1
-        # Create fake pandas Series
-        selected_object = pd.Series({
-            'source_id': obj['source_id'],
-            'ra': 0.0, 'dec': 0.0,
-            'distance_pc': obj['dist'],
-            'distance_ly': obj['dist'] * 3.26,
-            'mass_msun': obj['mass'],
-            'phot_g_mean_mag': 10.0,
-            'xi': 0.1,
-            'D_ssz': 0.9,
-            'pmra': 0.0, 'pmdec': 0.0,
-            'radial_velocity': 0.0
-        })
-        info = f"""
-## 🎯 Selected Object
-
-**Name:** {selected_object_name}  
-**Source ID:** {obj['source_id']} (TEST OBJECT)  
-**Position:** Test Object (no real coordinates)  
-**Distance:** {selected_object['distance_ly']:.2f} ly ({selected_object['distance_pc']:.2f} pc)  
-**Mass:** {selected_object['mass_msun']:.2e} M☉
-
-### ⚠️ TEST OBJECT for extreme comparison
-This is a synthetic object for testing physics plot differences.
-"""
-        print(f"[INFO] Selected TEST object: {selected_object_name}")
-        return info
+def select_object(obj_index):
+    """Select object for physics plots and enrich with external data"""
+    global selected_object, selected_object_index
     
     db = load_star_database()
-    
-    # Check if we got "NAME|INDEX" format (from search) or just INDEX
-    if isinstance(obj_index_or_combo, str) and '|' in obj_index_or_combo:
-        # Format: "Sgr A*|12345"
-        parts = obj_index_or_combo.split('|')
-        searched_name = parts[0]
-        obj_index = int(parts[1])
-        
-        # Use the SEARCHED name directly!
-        selected_object_name = searched_name
-        print(f"[INFO] Using searched name: {searched_name}")
-    else:
-        # Regular index, try to resolve name
-        obj_index = int(obj_index_or_combo)
-        selected_object_name = None  # Will be set below
-    
-    if obj_index >= len(db):
-        return f"Invalid index: {obj_index}"
-    
     selected_object = db.iloc[obj_index]
     selected_object_index = obj_index
     
-    # Try to get name (only if not already set from search)
-    if not selected_object_name:
-        obj_result = resolve_name(f"{selected_object['ra']},{selected_object['dec']}")
-        if obj_result:
-            selected_object_name = obj_result['name']
-        else:
-            # Check if object has a name column
-            if 'name' in selected_object.index and pd.notna(selected_object['name']):
-                selected_object_name = str(selected_object['name'])
-            elif 'target_name' in selected_object.index and pd.notna(selected_object['target_name']):
-                selected_object_name = str(selected_object['target_name'])
-            else:
-                # Use shortened GAIA ID
-                source_id = str(selected_object['source_id'])
-                if len(source_id) > 15:
-                    selected_object_name = f"GAIA ...{source_id[-8:]}"
-                else:
-                    selected_object_name = f"GAIA {source_id}"
+    if ENRICHMENT_AVAILABLE:
+        # Enrich object with AKARI/ESO/ALMA data
+        print(f"Enriching selected object: {selected_object.get('source_id', 'Unknown')}")
+        selected_object = enrich_object_data(dict(selected_object))
     
     # Create info text
     info = f"""
 ## 🎯 Selected Object
 
-**Name:** {selected_object_name}  
 **Source ID:** {selected_object['source_id']}  
 **Position:** RA = {selected_object['ra']:.4f}°, Dec = {selected_object['dec']:.4f}°  
 **Distance:** {selected_object['distance_ly']:.2f} ly ({selected_object['distance_pc']:.2f} pc)  
@@ -478,8 +370,6 @@ This is a synthetic object for testing physics plot differences.
     
     if not pd.isna(selected_object.get('radial_velocity')):
         info += f"**Radial Velocity:** {selected_object['radial_velocity']:.2f} km/s\n"
-    
-    print(f"[INFO] Selected object: {selected_object_name}")  # Debug
     
     return info
 
@@ -510,17 +400,264 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
     ---
     """)
     
-    # TAB 1: Start
-    with gr.Tab("🏠 Start"):
+    # TAB 1: Start & Data Fetch
+    with gr.Tab("🏠 Start & Data Fetch"):
         gr.Markdown(f"""
         ### ✅ SSZ Explorer Running!
         
         **Database:** {len(db):,} GAIA DR3 stars loaded
         **Status:** Ready
-        **Features:** Sky Maps | SSZ Physics | Object Search | CSV Export
-        
-        Navigate to other tabs to explore!
+        **Features:** Sky Maps | SSZ Physics | Object Search | Data Fetching
         """)
+        
+        gr.Markdown("---")
+        gr.Markdown("## 🔄 Data Fetch Suite")
+        gr.Markdown("Enrich database with external data from AKARI, ESO, ALMA, NED")
+        
+        # Region definitions
+        REGIONS = {
+            "galactic_center": {"ra": 266.4, "dec": -29.0, "radius": 5.0, "name": "Galactic Center"},
+            "cygnus_x": {"ra": 305.2, "dec": 0.5, "radius": 3.0, "name": "Cygnus X"},
+            "orion": {"ra": 83.8, "dec": -5.4, "radius": 2.0, "name": "Orion Nebula"},
+            "pleiades": {"ra": 56.75, "dec": 24.12, "radius": 2.0, "name": "Pleiades"},
+            "andromeda": {"ra": 10.68, "dec": 41.27, "radius": 1.0, "name": "Andromeda"}
+        }
+        
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("### Fetch Configuration")
+                
+                fetch_mode = gr.Radio(
+                    choices=[("All Objects (500k)", "all"), ("Specific Region", "region")],
+                    value="all",
+                    label="Fetch Mode"
+                )
+                
+                region_selector = gr.Dropdown(
+                    choices=list(REGIONS.keys()) + ["custom"],
+                    label="Region",
+                    visible=False
+                )
+                
+                with gr.Row():
+                    custom_ra = gr.Number(label="RA (°)", value=266.4, visible=False)
+                    custom_dec = gr.Number(label="Dec (°)", value=-29.0, visible=False)
+                    custom_radius = gr.Number(label="Radius (°)", value=5.0, visible=False)
+                
+                fetch_btn = gr.Button("🚀 Start Fetching", variant="primary", size="lg")
+                save_btn = gr.Button("💾 Save Enriched Database", variant="secondary")
+            
+            with gr.Column(scale=2):
+                gr.Markdown("### Fetch Status")
+                
+                # Initial status
+                initial_status = """⏳ Background enrichment RUNNING...
+
+This will take ~20-30 minutes for all 500k objects.
+Check console for progress.
+
+The app is FULLY FUNCTIONAL while enrichment runs in background!
+✓ Use Sky Maps
+✓ Search objects  
+✓ View physics plots
+
+When complete, the enriched database will be AUTO-SAVED!
+"""
+                
+                fetch_status = gr.Textbox(
+                    label="Status",
+                    lines=12,
+                    value=initial_status,
+                    interactive=False
+                )
+        
+        gr.Markdown("### 📊 Enrichment Statistics")
+        
+        # Get initial stats - SHOW REAL DATA
+        try:
+            stats = get_enrichment_stats(star_database)
+            total = stats['total_objects']
+            enriched = stats['enriched_objects']
+            percentage = (enriched / total * 100) if total > 0 else 0
+            
+            # Count REAL vs CALCULATED
+            if 'temperature_source' in star_database.columns:
+                real_temp = (star_database['temperature_source'].str.contains('AKARI|2MASS|ESO', case=False, na=False)).sum()
+                calc_temp = (star_database['temperature_source'] == 'Calculated_BP_RP').sum()
+            else:
+                real_temp = 0
+                calc_temp = stats['with_temperature']
+            
+            initial_stats_text = f"""
+**Database Statistics:**
+- **Total Objects:** {total:,}
+- **Enriched:** {enriched:,} ({percentage:.1f}%)
+
+**Temperature Data:**
+- **Real (fetched):** {real_temp:,}
+- **Calculated (BP-RP):** {calc_temp:,}
+- **Total:** {stats['with_temperature']:,}
+
+**Spectroscopy Data:**
+- **Total:** {stats['with_spectroscopy']:,}
+"""
+        except Exception as e:
+            initial_stats_text = f"**Loading stats...** ({str(e)})"
+        
+        stats_display = gr.Markdown(initial_stats_text)
+        
+        gr.Markdown("---")
+        gr.Markdown("### 📁 Data Files")
+        gr.Markdown(f"""
+        **Current Database:**
+        - `ssz_data/star_database_500k.csv` - {len(db):,} objects
+        
+        **Enriched Databases** (will appear after fetching):
+        - `ssz_data/star_database_enriched.csv` - With AKARI/ESO/ALMA data
+        
+        **Data Sources:**
+        - 🛰️ AKARI: Infrared temperature data
+        - 🔭 ESO: GRAVITY/XSHOOTER spectroscopy
+        - 📡 ALMA: Molecular line observations
+        - 🌐 NED: Multi-wavelength catalogs
+        """)
+        
+        def toggle_region_visibility(mode):
+            return gr.update(visible=(mode == "region"))
+        
+        def toggle_custom_coords(region):
+            visible = (region == "custom")
+            return gr.update(visible=visible), gr.update(visible=visible), gr.update(visible=visible)
+        
+        def run_fetch(mode, region, ra_custom, dec_custom, radius_custom):
+            global star_database
+            
+            if not ENRICHMENT_AVAILABLE:
+                return "❌ Fetch system not available!"
+            
+            # Determine fetch range
+            if mode == "all":
+                max_objects = len(star_database)
+                status = f"Starting FULL DATABASE fetch ({max_objects:,} objects)...\n"
+            else:
+                if region == "custom":
+                    ra, dec, radius = ra_custom, dec_custom, radius_custom
+                    region_name = f"Custom ({ra:.2f}°, {dec:.2f}°)"
+                else:
+                    r_data = REGIONS[region]
+                    ra, dec, radius = r_data["ra"], r_data["dec"], r_data["radius"]
+                    region_name = r_data["name"]
+                
+                distances = np.sqrt((star_database['ra'] - ra)**2 + (star_database['dec'] - dec)**2)
+                region_mask = distances <= radius
+                max_objects = region_mask.sum()
+                status += f"Starting fetch for region: {region_name}\n"
+                status += f"  - Objects in region: {max_objects:,}\n"
+            
+            status += "\n✓ Fetch system ready\n"
+            
+            try:
+                star_database = enrich_database(star_database, max_objects=max_objects)
+                stats = get_enrichment_stats(star_database)
+                
+                status += f"\n✅ Fetch Complete!\n"
+                status += f"  - Total: {stats['total_objects']:,}\n"
+                status += f"  - Enriched: {stats['enriched_objects']:,}\n"
+                status += f"  - Temperature: {stats['with_temperature']}\n"
+                status += f"  - Spectroscopy: {stats['with_spectroscopy']}\n"
+                
+                return status
+            except Exception as e:
+                return status + f"\n❌ Error: {e}\n"
+        
+        def save_enriched():
+            try:
+                from pathlib import Path
+                output_path = Path(__file__).parent / "ssz_data" / "star_database_enriched.csv"
+                output_path.parent.mkdir(exist_ok=True)
+                
+                if save_enriched_database(star_database, output_path):
+                    stats = get_enrichment_stats(star_database)
+                    return f"""✅ Saved!
+
+**File:** {output_path}
+**Size:** {output_path.stat().st_size / 1024 / 1024:.2f} MB
+
+**Statistics:**
+- Total: {stats['total_objects']:,}
+- Enriched: {stats['enriched_objects']:,}
+- Temperature: {stats.get('with_temperature', 'N/A')}
+- Spectroscopy: {stats.get('with_spectroscopy', 'N/A')}
+"""
+                return "❌ Failed to save!"
+            except Exception as e:
+                return f"❌ Error: {str(e)}"
+        
+        def update_stats():
+            try:
+                stats = get_enrichment_stats(star_database)
+                
+                # Safe percentage calculation
+                total = stats['total_objects']
+                enriched = stats['enriched_objects']
+                percentage = (enriched / total * 100) if total > 0 else 0
+                
+                # Count REAL vs CALCULATED temperatures
+                if 'temperature_source' in star_database.columns:
+                    real_temp = (star_database['temperature_source'].str.contains('AKARI|2MASS|ESO', case=False, na=False)).sum()
+                    calc_temp = (star_database['temperature_source'] == 'Calculated_BP_RP').sum()
+                else:
+                    real_temp = 0
+                    calc_temp = stats['with_temperature']
+                
+                text = f"""
+**Database Statistics:**
+- **Total Objects:** {total:,}
+- **Enriched:** {enriched:,} ({percentage:.1f}%)
+
+**Temperature Data:**
+- **Real (fetched):** {real_temp:,}
+- **Calculated (BP-RP):** {calc_temp:,}
+- **Total:** {stats['with_temperature']:,}
+
+**Spectroscopy Data:**
+- **Total:** {stats['with_spectroscopy']:,}
+
+**Data Sources:**
+"""
+                if stats.get('temperature_sources'):
+                    text += "\n**Temperature:**\n"
+                    for source, count in stats['temperature_sources'].items():
+                        label = "REAL" if source != 'Calculated_BP_RP' else "CALCULATED"
+                        text += f"  - {source} [{label}]: {count:,}\n"
+                
+                if stats.get('spectroscopy_sources'):
+                    text += "\n**Spectroscopy:**\n"
+                    for source, count in stats['spectroscopy_sources'].items():
+                        text += f"  - {source}: {count:,}\n"
+                
+                return text
+            except Exception as e:
+                return f"**Error loading stats:** {str(e)}"
+        
+        fetch_mode.change(toggle_region_visibility, fetch_mode, region_selector)
+        region_selector.change(toggle_custom_coords, region_selector, [custom_ra, custom_dec, custom_radius])
+        
+        fetch_btn.click(
+            fn=run_fetch,
+            inputs=[fetch_mode, region_selector, custom_ra, custom_dec, custom_radius],
+            outputs=fetch_status
+        ).then(
+            fn=update_stats,
+            inputs=None,
+            outputs=stats_display
+        )
+        
+        save_btn.click(
+            fn=save_enriched,
+            inputs=None,
+            outputs=fetch_status
+        )
     
     # TAB 1.5: Object Search & Selection
     with gr.Tab("🔍 Object Search"):
@@ -534,17 +671,8 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
                 - **Aliases:** `Sagittarius A*`, `α Ori`, `Andromeda`
                 - **Coordinates:** `RA, Dec` (e.g., `266.4, -29.0`)
                 - **Source ID:** Integer (e.g., `1234567890`)
-                - **Test Objects:** `test:sun`, `test:sgr a*`, `test:m87*` (for extreme comparisons)
                 
                 **Famous Objects:** Sgr A*, Betelgeuse, Sirius, Vega, Rigel, Proxima, M31, M42, Pleiades, and more!
-                
-                **🧪 Test Objects (extreme masses for plot comparison):**
-                - `test:sun` - 1 M☉, 1 pc
-                - `test:neutron` - 2 M☉, 100 pc
-                - `test:sgr a*` - 4.3×10⁶ M☉, 8000 pc
-                - `test:m87*` - 6.5×10⁹ M☉, 16.8 Mpc
-                - `test:small` - 0.5 M☉, 10 pc
-                - `test:giant` - 20 M☉, 500 pc
                 """)
                 
                 search_input = gr.Textbox(
@@ -811,28 +939,101 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
                     domains_show_objects = gr.Checkbox(label="Show real objects", value=True)
                     domains_btn = gr.Button("📊 Plot Domains", variant="primary", size="lg")
                 
-                domains_plot = gr.Image(label="SSZ Domains", type="filepath")
+                domains_plot = gr.Plot(label="SSZ Domains")
                 
                 def plot_domains_with_objects(show_objects):
-                    """Generate domains plot with current selected object - OBJECT SPECIFIC."""
-                    global selected_object_name, selected_object
+                    try:
+                        # Use selected object for plot
+                        if selected_object is not None:
+                            mass_msun = selected_object['mass_msun']
+                            obj_name = f"ID:{selected_object['source_id']}"
+                            fig = create_g1_g2_domain_plot(mass_msun=mass_msun, object_name=obj_name)
+                        else:
+                            # Default: Sgr A*
+                            fig = create_g1_g2_domain_plot()
+                    except Exception as e:
+                        print(f"ERROR in g1/g2 plot: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        # Return error figure
+                        fig = go.Figure()
+                        fig.add_annotation(text=f"Error: {str(e)}", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False, font=dict(size=16, color="red"))
+                        return fig
                     
-                    # Use stored object name or default
-                    object_name = selected_object_name if selected_object_name else "Sgr A*"
+                    # Add sample of real objects from database
+                    if show_objects:
+                        # Constants
+                        G = 6.67430e-11
+                        c = 2.99792458e8
+                        M_sun = 1.989e30
+                        PC_TO_M = 3.0857e16
+                        
+                        # Add sample of real objects from database
+                        try:
+                            db = load_star_database()
+                            
+                            # Sample 100 objects randomly
+                            import random
+                            if len(db) > 100:
+                                indices = random.sample(range(len(db)), 100)
+                                sample = db.iloc[indices]
+                            else:
+                                sample = db
+                            
+                            # Calculate r/r_s for each
+                            r_ratios = []
+                            xi_vals = []
+                            hover_texts = []
+                            
+                            for idx, obj in sample.iterrows():
+                                try:
+                                    M_kg = obj['mass_msun'] * M_sun
+                                    r_s = 2 * G * M_kg / (c**2)
+                                    r_m = obj['distance_pc'] * PC_TO_M
+                                    r_ratio = r_m / r_s
+                                    
+                                    if r_ratio > 0 and r_ratio < 10000:  # Reasonable range
+                                        r_ratios.append(r_ratio)
+                                        xi_vals.append(obj['xi'])
+                                        hover_texts.append(f"ID: {obj['source_id']}<br>Distance: {obj['distance_ly']:.1f} ly")
+                                except:
+                                    pass
+                            
+                            # Add sample objects
+                            if r_ratios:
+                                fig.add_trace(go.Scatter(
+                                    x=r_ratios,
+                                    y=xi_vals,
+                                    mode='markers',
+                                    marker=dict(size=6, color='cyan', opacity=0.5),
+                                    name='Sample Stars (100)',
+                                    hovertext=hover_texts
+                                ))
+                        except Exception as e:
+                            print(f"Error adding sample objects: {e}")
+                        
+                        # Add SELECTED object on top
+                        if selected_object is not None:
+                            try:
+                                obj = selected_object
+                                
+                                M_kg = obj['mass_msun'] * M_sun
+                                r_s = 2 * G * M_kg / (c**2)
+                                r_m = obj['distance_pc'] * PC_TO_M
+                                r_ratio = r_m / r_s
+                                
+                                fig.add_trace(go.Scatter(
+                                    x=[r_ratio],
+                                    y=[obj['xi']],
+                                    mode='markers',
+                                    marker=dict(size=20, color='yellow', symbol='star', line=dict(width=3, color='red')),
+                                    name=f'⭐ SELECTED (ID: {obj["source_id"]})',
+                                    hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly"
+                                ))
+                            except Exception as e:
+                                print(f"Error adding selected object: {e}")
                     
-                    # Get object parameters
-                    if selected_object is not None:
-                        mass_msun = float(selected_object.get('mass_msun', 1.0))
-                        distance_pc = float(selected_object.get('distance_pc', 1000.0))
-                    else:
-                        mass_msun = 1.0
-                        distance_pc = 1000.0
-                    
-                    # Generate OBJECT-SPECIFIC plot
-                    from ssz_physics_plots_matplotlib import create_domains_plot_png
-                    print(f"[DEBUG] Generating Domains plot for: {object_name} (M={mass_msun:.2f} M☉, d={distance_pc:.1f} pc)")
-                    
-                    return create_domains_plot_png(object_name=object_name, mass_msun=mass_msun, distance_pc=distance_pc)
+                    return fig
                 
                 domains_btn.click(
                     fn=plot_domains_with_objects,
@@ -844,29 +1045,18 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
             with gr.Tab("Time Dilation"):
                 gr.Markdown("**Compare SSZ vs GR time dilation**")
                 dilation_btn = gr.Button("⏱️ Plot Time Dilation", variant="primary", size="lg")
-                dilation_plot = gr.Image(label="Time Dilation", type="filepath")
+                dilation_plot = gr.Plot(label="Time Dilation")
                 
-                def plot_dilation_dynamic():
-                    """Generate time dilation plot - OBJECT SPECIFIC."""
-                    global selected_object_name, selected_object
-                    
-                    object_name = selected_object_name if selected_object_name else "Sgr A*"
-                    
-                    # Get object parameters
+                def plot_time_dilation():
                     if selected_object is not None:
-                        mass_msun = float(selected_object.get('mass_msun', 1.0))
-                        distance_pc = float(selected_object.get('distance_pc', 1000.0))
+                        mass_msun = selected_object['mass_msun']
+                        obj_name = f"ID:{selected_object['source_id']}"
+                        return create_time_dilation_comparison(mass_msun=mass_msun, object_name=obj_name)
                     else:
-                        mass_msun = 1.0
-                        distance_pc = 1000.0
-                    
-                    from ssz_physics_plots_matplotlib import create_time_dilation_png
-                    print(f"[DEBUG] Generating Time Dilation plot for: {object_name} (M={mass_msun:.2f} M☉)")
-                    
-                    return create_time_dilation_png(object_name=object_name, mass_msun=mass_msun, distance_pc=distance_pc)
+                        return create_time_dilation_comparison()
                 
                 dilation_btn.click(
-                    fn=plot_dilation_dynamic,
+                    fn=plot_time_dilation,
                     inputs=None,
                     outputs=dilation_plot
                 )
@@ -875,29 +1065,10 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
             with gr.Tab("Radial Stretch"):
                 gr.Markdown("**Radial stretch factor showing domain structure**")
                 stretch_btn = gr.Button("📏 Plot Radial Stretch", variant="primary", size="lg")
-                stretch_plot = gr.Image(label="Radial Stretch", type="filepath")
-                
-                def plot_stretch_dynamic():
-                    """Generate radial stretch plot - OBJECT SPECIFIC."""
-                    global selected_object_name, selected_object
-                    
-                    object_name = selected_object_name if selected_object_name else "Sgr A*"
-                    
-                    # Get object parameters
-                    if selected_object is not None:
-                        mass_msun = float(selected_object.get('mass_msun', 1.0))
-                        distance_pc = float(selected_object.get('distance_pc', 1000.0))
-                    else:
-                        mass_msun = 1.0
-                        distance_pc = 1000.0
-                    
-                    from ssz_physics_plots_matplotlib import create_radial_stretch_png
-                    print(f"[DEBUG] Generating Radial Stretch plot for: {object_name} (M={mass_msun:.2f} M☉)")
-                    
-                    return create_radial_stretch_png(object_name=object_name, mass_msun=mass_msun, distance_pc=distance_pc)
+                stretch_plot = gr.Plot(label="Radial Stretch")
                 
                 stretch_btn.click(
-                    fn=plot_stretch_dynamic,
+                    fn=create_radial_stretch_plot,
                     inputs=None,
                     outputs=stretch_plot
                 )
@@ -906,29 +1077,10 @@ with gr.Blocks(title="SSZ Explorer - Complete", theme=gr.themes.Soft()) as app:
             with gr.Tab("Combined Analysis"):
                 gr.Markdown("**Complete SSZ physics overview - 4 key metrics**")
                 combined_btn = gr.Button("🔬 Plot Combined Analysis", variant="primary", size="lg")
-                combined_plot = gr.Image(label="Combined SSZ Analysis", type="filepath")
-                
-                def plot_combined_dynamic():
-                    """Generate combined analysis plot - OBJECT SPECIFIC."""
-                    global selected_object_name, selected_object
-                    
-                    object_name = selected_object_name if selected_object_name else "Sgr A*"
-                    
-                    # Get object parameters
-                    if selected_object is not None:
-                        mass_msun = float(selected_object.get('mass_msun', 1.0))
-                        distance_pc = float(selected_object.get('distance_pc', 1000.0))
-                    else:
-                        mass_msun = 1.0
-                        distance_pc = 1000.0
-                    
-                    from ssz_physics_plots_matplotlib import create_combined_analysis_png
-                    print(f"[DEBUG] Generating Combined Analysis for: {object_name} (M={mass_msun:.2f} M☉)")
-                    
-                    return create_combined_analysis_png(object_name=object_name, mass_msun=mass_msun, distance_pc=distance_pc)
+                combined_plot = gr.Plot(label="Combined SSZ Analysis")
                 
                 combined_btn.click(
-                    fn=plot_combined_dynamic,
+                    fn=create_combined_ssz_analysis,
                     inputs=None,
                     outputs=combined_plot
                 )
@@ -984,4 +1136,14 @@ def launch_app(share=False, port=9500):
 
 
 if __name__ == "__main__":
-    launch_app(share=False, port=9500)
+    # Try ports until we find a free one
+    for port in [7860, 7861, 7862, 9500]:
+        try:
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('', port))
+            s.close()
+            launch_app(share=False, port=port)
+            break
+        except:
+            continue
