@@ -140,12 +140,14 @@ def create_domains_plot_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=100
     ax.legend(fontsize=11, loc='upper right', framealpha=0.95, facecolor='#1a1a2e', edgecolor='white', labelcolor='white')
     ax.tick_params(colors='white', labelsize=12)
     
-    # Save
-    import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-        plt.savefig(tmp.name, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
-        plt.close()
-        return tmp.name
+    # Save to permanent plots directory
+    from pathlib import Path
+    plots_dir = Path(__file__).parent / "plots"
+    plots_dir.mkdir(exist_ok=True)
+    output_path = plots_dir / "domain_structure.png"
+    plt.savefig(output_path, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
+    plt.close()
+    return str(output_path)
 
 
 def create_time_dilation_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1000.0):
@@ -265,12 +267,14 @@ def create_time_dilation_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=10
               edgecolor='white', labelcolor='white', ncol=2)
     ax.tick_params(colors='white', labelsize=12)
     
-    # Save
-    import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-        plt.savefig(tmp.name, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
-        plt.close()
-        return tmp.name
+    # Save to permanent plots directory
+    from pathlib import Path
+    plots_dir = Path(__file__).parent / "plots"
+    plots_dir.mkdir(exist_ok=True)
+    output_path = plots_dir / "time_dilation_a.png"
+    plt.savefig(output_path, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
+    plt.close()
+    return str(output_path)
 
 
 def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1000.0, star_database=None):
@@ -398,12 +402,17 @@ def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1
     
     plt.tight_layout()
     
-    # Save
-    import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-        plt.savefig(tmp.name, format='png', dpi=150, bbox_inches='tight', facecolor='white')
-        plt.close()
-        return tmp.name
+    # Save to permanent plots directory (not temp!)
+    import os
+    from pathlib import Path
+    
+    plots_dir = Path(__file__).parent / "plots"
+    plots_dir.mkdir(exist_ok=True)
+    
+    output_path = plots_dir / "seg_performance_vs_radius.png"
+    plt.savefig(output_path, format='png', dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close()
+    return str(output_path)
 
 
 def _create_radial_stretch_fallback(object_name="Sgr A*", mass_msun=1.0, distance_pc=1000.0):
@@ -533,12 +542,14 @@ def _create_radial_stretch_fallback(object_name="Sgr A*", mass_msun=1.0, distanc
     
     plt.tight_layout()
     
-    # Save
-    import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-        plt.savefig(tmp.name, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
-        plt.close()
-        return tmp.name
+    # Save to permanent plots directory
+    from pathlib import Path
+    plots_dir = Path(__file__).parent / "plots"
+    plots_dir.mkdir(exist_ok=True)
+    output_path = plots_dir / "radial_stretch_fallback.png"
+    plt.savefig(output_path, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
+    plt.close()
+    return str(output_path)
 
 
 def create_combined_analysis_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1000.0):
@@ -618,9 +629,11 @@ def create_combined_analysis_png(object_name="Sgr A*", mass_msun=1.0, distance_p
              fontsize=13, color='white', ha='center', va='top', fontweight='bold',
              bbox=dict(boxstyle='round,pad=0.7', facecolor='#1a1a2e', edgecolor='orange', alpha=0.9))
     
-    # Save
-    import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-        plt.savefig(tmp.name, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
-        plt.close()
-        return tmp.name
+    # Save to permanent plots directory
+    from pathlib import Path
+    plots_dir = Path(__file__).parent / "plots"
+    plots_dir.mkdir(exist_ok=True)
+    output_path = plots_dir / "combined_analysis.png"
+    plt.savefig(output_path, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
+    plt.close()
+    return str(output_path)
