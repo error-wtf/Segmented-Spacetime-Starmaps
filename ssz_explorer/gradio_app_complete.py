@@ -32,12 +32,12 @@ from pathlib import Path
 
 # Core modules (getestet & funktionierend!)
 from star_map_generator import create_sky_map, create_3d_sky_map, create_default_universe
-from ssz_physics_plots import (
-    create_g1_g2_domain_plot,
-    create_time_dilation_comparison,
-    create_radial_stretch_plot,
-    create_combined_ssz_analysis
+from ssz_time_dilation_crossover import create_time_dilation_comparison
+from ssz_physics_plots_matplotlib import (
+    create_radial_stretch_png,
+    create_combined_analysis_png
 )
+from ssz_g1_g2_4panel_REAL import create_g1_g2_temperature_plot
 
 # Import unified data fetcher
 try:
@@ -568,9 +568,7 @@ When complete, the enriched database will be AUTO-SAVED!
                 
                 return status
             except Exception as e:
-                import traceback
-                error_details = traceback.format_exc()
-                return status + f"\n❌ Error: {str(e)}\n\n⚠️ This is likely an astroquery server issue (IRSA/VizieR).\nThe database is safe. Try again later or use offline mode.\n"
+                return status + f"\n❌ Error: {e}\n"
         
         def save_enriched():
             try:
@@ -945,14 +943,15 @@ When complete, the enriched database will be AUTO-SAVED!
                 
                 def plot_domains_with_objects(show_objects):
                     try:
+                        global selected_object
                         # Use selected object for plot
                         if selected_object is not None:
-                            mass_msun = selected_object['mass_msun']
-                            obj_name = f"ID:{selected_object['source_id']}"
-                            fig = create_g1_g2_domain_plot(mass_msun=mass_msun, object_name=obj_name)
+                            mass_msun = selected_object.get('mass_msun', 1.0)
+                            obj_name = selected_object.get('name', f"ID:{selected_object.get('source_id', 'unknown')}")
+                            fig = create_g1_g2_temperature_plot(mass_msun=mass_msun, object_name=obj_name)
                         else:
                             # Default: Sgr A*
-                            fig = create_g1_g2_domain_plot()
+                            fig = create_g1_g2_temperature_plot(mass_msun=4.3e6, object_name="Sgr A*")
                     except Exception as e:
                         print(f"ERROR in g1/g2 plot: {e}")
                         import traceback
@@ -1045,17 +1044,17 @@ When complete, the enriched database will be AUTO-SAVED!
             
             # Sub-Tab: Time Dilation
             with gr.Tab("Time Dilation"):
-                gr.Markdown("**Compare SSZ vs GR time dilation**")
-                dilation_btn = gr.Button("⏱️ Plot Time Dilation", variant="primary", size="lg")
-                dilation_plot = gr.Plot(label="Time Dilation")
+                gr.Markdown("**GR vs SSZ Time Dilation - Universal Crossover**")
+                dilation_btn = gr.Button("⏱️ Plot Time Dilation Crossover", variant="primary", size="lg")
+                dilation_plot = gr.Plot(label="Time Dilation Crossover")
                 
                 def plot_time_dilation():
                     if selected_object is not None:
                         mass_msun = selected_object['mass_msun']
-                        obj_name = f"ID:{selected_object['source_id']}"
-                        return create_time_dilation_comparison(mass_msun=mass_msun, object_name=obj_name)
+                        obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
+                        return create_time_dilation_comparison(mass_msun, obj_name)
                     else:
-                        return create_time_dilation_comparison()
+                        return create_time_dilation_comparison(4.3e6, "Sgr A*")
                 
                 dilation_btn.click(
                     fn=plot_time_dilation,
@@ -1067,10 +1066,19 @@ When complete, the enriched database will be AUTO-SAVED!
             with gr.Tab("Radial Stretch"):
                 gr.Markdown("**Radial stretch factor showing domain structure**")
                 stretch_btn = gr.Button("📏 Plot Radial Stretch", variant="primary", size="lg")
-                stretch_plot = gr.Plot(label="Radial Stretch")
+                stretch_plot = gr.Image(label="Radial Stretch", type="filepath")
+                
+                def plot_radial_stretch():
+                    if selected_object is not None:
+                        mass_msun = selected_object['mass_msun']
+                        obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
+                        distance_pc = selected_object.get('distance', 1000.0)
+                        return create_radial_stretch_png(obj_name, mass_msun, distance_pc)
+                    else:
+                        return create_radial_stretch_png("Sgr A*", 4.3e6, 8000.0)
                 
                 stretch_btn.click(
-                    fn=create_radial_stretch_plot,
+                    fn=plot_radial_stretch,
                     inputs=None,
                     outputs=stretch_plot
                 )
@@ -1079,10 +1087,19 @@ When complete, the enriched database will be AUTO-SAVED!
             with gr.Tab("Combined Analysis"):
                 gr.Markdown("**Complete SSZ physics overview - 4 key metrics**")
                 combined_btn = gr.Button("🔬 Plot Combined Analysis", variant="primary", size="lg")
-                combined_plot = gr.Plot(label="Combined SSZ Analysis")
+                combined_plot = gr.Image(label="Combined SSZ Analysis", type="filepath")
+                
+                def plot_combined():
+                    if selected_object is not None:
+                        mass_msun = selected_object['mass_msun']
+                        obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
+                        distance_pc = selected_object.get('distance', 1000.0)
+                        return create_combined_analysis_png(obj_name, mass_msun, distance_pc)
+                    else:
+                        return create_combined_analysis_png("Sgr A*", 4.3e6, 8000.0)
                 
                 combined_btn.click(
-                    fn=create_combined_ssz_analysis,
+                    fn=plot_combined,
                     inputs=None,
                     outputs=combined_plot
                 )

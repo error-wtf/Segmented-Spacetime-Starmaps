@@ -266,6 +266,8 @@ def enrich_database(df: pd.DataFrame, max_objects: int = 1000, progress_callback
     print(f"  - Using {min(10, len(indices_to_enrich))} parallel workers")
     
     enriched_count = 0
+    total_with_temp = 0
+    total_with_spec = 0
     start_time = time.time()
     
     def enrich_one(idx):
@@ -325,12 +327,15 @@ def enrich_database(df: pd.DataFrame, max_objects: int = 1000, progress_callback
         else:
             raise
     
+    # Calculate final elapsed time
+    elapsed = time.time() - start_time
+    
     print(f"ENRICHMENT COMPLETE!")
     print(f"="*80)
     print(f"  - {enriched_count} objects processed in {elapsed/60:.1f} minutes")
     print(f"  - {total_with_temp} objects with temperature data")
     print(f"  - {total_with_spec} objects with spectroscopy data")
-    print(f"  - Rate: {enriched_count/elapsed:.1f} objects/second")
+    print(f"  - Rate: {enriched_count/elapsed:.1f} objects/second" if elapsed > 0 else "  - Rate: N/A")
     print(f"="*80)
     
     # AUTO-SAVE enriched database
