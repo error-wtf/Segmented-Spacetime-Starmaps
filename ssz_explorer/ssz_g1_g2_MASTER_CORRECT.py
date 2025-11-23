@@ -39,11 +39,11 @@ def temperature_profile(r, r_s, T_max=500.0, alpha=ALPHA, r_c=R_C):
 
 def create_g1_g2_plot(mass_msun=4.3e6, object_name="Sgr A*"):
     """
-    4-Panel Plot:
-    1. Temperature Profile with OPTIMIZED Piecewise Fit (g1 flat, g2 steep)
-    2. Curvature d²T/dr² (Sharp Break Detection)
-    3. Detection Method Consensus (4 methods)
-    4. Residuals (Data - Fit)
+    4-Panel Scientific Plot (PAPER-RESTORED Style):
+    1. Temperature Profile with Sharp Break at r_c
+    2. Curvature d²T/dr² (Maximum = Break Detection)
+    3. Piecewise vs Smooth Fit Comparison (R² Analysis)
+    4. Residuals (Piecewise vs Smooth)
     
     Based on PAPER-RESTORED/generate_sharp_break_plots.py
     """
@@ -111,8 +111,8 @@ def create_g1_g2_plot(mass_msun=4.3e6, object_name="Sgr A*"):
         subplot_titles=(
             '1: Temperature Profile (Piecewise)',
             '2: Curvature d²T/dr² (Sharp Break)',
-            '3: Detection Method Consensus',
-            '4: Residuals (Data - Fit)'
+            '3: Piecewise vs Smooth Fit (R²)',
+            '4: Residuals (Piecewise Fit)'
         ),
         vertical_spacing=0.12,
         horizontal_spacing=0.1
@@ -179,36 +179,48 @@ def create_g1_g2_plot(mass_msun=4.3e6, object_name="Sgr A*"):
         showlegend=False
     ), row=1, col=2)
     
-    # === PANEL 3: Consensus Detection ===
-    # Multiple methods converge to optimized break
-    idx_curv = np.argmax(np.abs(d2T_dr2))
-    r_curv = r_pc[idx_curv]
+    # === PANEL 3: Piecewise vs Smooth Fit Comparison (R² Analysis) ===
+    # Smooth cubic fit (NO sharp break)
+    p_smooth = np.polyfit(r_pc, T, 3)
+    T_smooth = np.polyval(p_smooth, r_pc)
     
-    # Theoretical, Curvature, Piecewise Fit, Gradient
-    methods = ['Theory', 'Curvature', 'Piecewise', 'Gradient']
-    r_detections = [r_c_pc, r_curv, r_break_opt, r_pc[np.argmin(dT_dr)]]
-    colors = ['cyan', 'orange', 'lime', 'magenta']
+    # Calculate R² for both models
+    ss_tot = np.sum((T - np.mean(T))**2)
+    ss_res_piece = np.sum((T - T_fit)**2)
+    ss_res_smooth = np.sum((T - T_smooth)**2)
+    r2_piece = 1 - (ss_res_piece / ss_tot) if ss_tot > 0 else 0
+    r2_smooth = 1 - (ss_res_smooth / ss_tot) if ss_tot > 0 else 0
     
-    for method, r_det, color in zip(methods, r_detections, colors):
-        fig.add_trace(go.Scatter(
-            x=[r_det, r_det], y=[0, 1],
-            mode='lines',
-            name=method,
-            line=dict(width=2, color=color),
-            showlegend=False
-        ), row=2, col=1)
+    # Plot data points
+    fig.add_trace(go.Scatter(
+        x=r_pc, y=T,
+        mode='markers',
+        name='Data',
+        marker=dict(size=8, color='white', opacity=0.8),
+        showlegend=True
+    ), row=2, col=1)
     
-    # Consensus line (mean of all methods)
-    r_consensus = np.mean(r_detections)
-    fig.add_vline(x=r_consensus, line=dict(color='white', width=3, dash='solid'),
+    # Plot piecewise fit
+    fig.add_trace(go.Scatter(
+        x=r_pc, y=T_fit,
+        mode='lines',
+        name=f'Piecewise (R²={r2_piece:.4f})',
+        line=dict(color='lime', width=3),
+        showlegend=True
+    ), row=2, col=1)
+    
+    # Plot smooth fit
+    fig.add_trace(go.Scatter(
+        x=r_pc, y=T_smooth,
+        mode='lines',
+        name=f'Smooth Cubic (R²={r2_smooth:.4f})',
+        line=dict(color='cyan', width=3, dash='dash'),
+        showlegend=True
+    ), row=2, col=1)
+    
+    # Mark break point
+    fig.add_vline(x=r_break_opt, line=dict(color='red', width=2, dash='dot'),
                  row=2, col=1)
-    fig.add_annotation(
-        x=r_consensus, y=0.5,
-        text=f"Consensus: {r_consensus:.3e} pc",
-        showarrow=False,
-        bgcolor='black', font=dict(color='white', size=11),
-        row=2, col=1
-    )
     
     # === PANEL 4: Residuals ===
     # Compute residuals from optimized fit
@@ -241,7 +253,7 @@ def create_g1_g2_plot(mass_msun=4.3e6, object_name="Sgr A*"):
     
     fig.update_yaxes(title_text="T [K]", row=1, col=1)
     fig.update_yaxes(title_text="Normalized", row=1, col=2)
-    fig.update_yaxes(title_text="Consensus", row=2, col=1)
+    fig.update_yaxes(title_text="T [K]", row=2, col=1)
     fig.update_yaxes(title_text="Residual [K]", row=2, col=2)
     
     fig.update_layout(
