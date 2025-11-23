@@ -277,7 +277,7 @@ def create_time_dilation_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=10
     return str(output_path)
 
 
-def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1000.0, star_database=None):
+def create_seg_performance_png(star_database=None):
     """
     SEG Performance vs Radius: φ/2 Boundary Validation
     
@@ -290,8 +290,7 @@ def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1
     - Peak performance location
     """
     if star_database is None:
-        # Fallback: generate synthetic data
-        return _create_radial_stretch_fallback(object_name, mass_msun, distance_pc)
+        return None
     
     # Calculate r/r_s and SEG performance for all objects
     results = []
@@ -415,9 +414,10 @@ def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1
     return str(output_path)
 
 
-def _create_radial_stretch_fallback(object_name="Sgr A*", mass_msun=1.0, distance_pc=1000.0):
+def create_radial_stretch_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=1000.0):
     """
-    Fallback: Old γ(r) plot if no database available
+    Radial Metric γ(r) - SHARP BREAK at r_c with PIECEWISE FITS + Collapse Rate
+    Like PAPER-RESTORED domain structure!
     """
     M = mass_msun * M_SUN
     r_s = r_schwarzschild(M)
@@ -546,7 +546,7 @@ def _create_radial_stretch_fallback(object_name="Sgr A*", mass_msun=1.0, distanc
     from pathlib import Path
     plots_dir = Path(__file__).parent / "plots"
     plots_dir.mkdir(exist_ok=True)
-    output_path = plots_dir / "radial_stretch_fallback.png"
+    output_path = plots_dir / "radial_stretch.png"
     plt.savefig(output_path, format='png', dpi=150, bbox_inches='tight', facecolor='#0a0a1f')
     plt.close()
     return str(output_path)

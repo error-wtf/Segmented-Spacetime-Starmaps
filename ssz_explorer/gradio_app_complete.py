@@ -1071,24 +1071,23 @@ When complete, the enriched database will be AUTO-SAVED!
             
             # Sub-Tab: Radial Stretch
             with gr.Tab("Radial Stretch"):
-                gr.Markdown("**SEG Performance vs Radius: φ/2 Boundary Validation**\nWin Rate calculation across all objects")
+                gr.Markdown("**Radial stretch factor showing domain structure**")
                 stretch_btn = gr.Button("📏 Plot Radial Stretch", variant="primary", size="lg")
                 stretch_plot = gr.Image(label="Radial Stretch", type="filepath")
                 
                 def plot_radial_stretch():
                     try:
-                        global star_database
-                        print(f"[DEBUG] Radial Stretch: Computing SEG Performance for {len(star_database)} objects")
                         if selected_object is not None:
                             mass_msun = selected_object['mass_msun']
                             obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
                             distance_pc = selected_object.get('distance', 1000.0)
-                            result = create_radial_stretch_png(obj_name, mass_msun, distance_pc, star_database)
+                            print(f"[DEBUG] Radial Stretch: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
+                            result = create_radial_stretch_png(obj_name, mass_msun, distance_pc)
                             print(f"[DEBUG] Result: {result}")
                             return result
                         else:
-                            print("[DEBUG] Radial Stretch: Using all objects in database")
-                            result = create_radial_stretch_png("All Objects", 4.3e6, 8000.0, star_database)
+                            print("[DEBUG] Radial Stretch: Using default Sgr A*")
+                            result = create_radial_stretch_png("Sgr A*", 4.3e6, 8000.0)
                             print(f"[DEBUG] Result: {result}")
                             return result
                     except Exception as e:
@@ -1101,6 +1100,32 @@ When complete, the enriched database will be AUTO-SAVED!
                     fn=plot_radial_stretch,
                     inputs=None,
                     outputs=stretch_plot
+                )
+            
+            # Sub-Tab: SEG Performance (NEW!)
+            with gr.Tab("SEG Performance"):
+                gr.Markdown("**SEG Performance vs Radius: φ/2 Boundary Validation**\nWin Rate calculation across ALL objects")
+                seg_perf_btn = gr.Button("📊 Plot SEG Performance", variant="primary", size="lg")
+                seg_perf_plot = gr.Image(label="SEG Performance vs Radius", type="filepath")
+                
+                def plot_seg_performance():
+                    try:
+                        global star_database
+                        print(f"[DEBUG] SEG Performance: Computing for {len(star_database)} objects")
+                        from ssz_physics_plots_matplotlib import create_seg_performance_png
+                        result = create_seg_performance_png(star_database)
+                        print(f"[DEBUG] Result: {result}")
+                        return result
+                    except Exception as e:
+                        print(f"[ERROR] SEG Performance failed: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        return None
+                
+                seg_perf_btn.click(
+                    fn=plot_seg_performance,
+                    inputs=None,
+                    outputs=seg_perf_plot
                 )
             
             # Sub-Tab: Combined Analysis
