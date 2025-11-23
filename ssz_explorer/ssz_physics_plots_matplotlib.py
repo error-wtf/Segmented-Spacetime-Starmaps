@@ -310,7 +310,9 @@ def create_seg_performance_png(star_database=None):
         r_ratio = r / r_s
         
         # Skip extreme values
-        if r_ratio < 0.5 or r_ratio > 20:
+        # NOTE: Normal stars have r_ratio ~ 10^13 (far from r_s)
+        # This plot only makes sense near black holes (r/r_s < 100)
+        if r_ratio < 0.5 or r_ratio > 100:
             continue
         
         # Calculate SEG vs GR predictions
@@ -328,7 +330,11 @@ def create_seg_performance_png(star_database=None):
         })
     
     if len(results) == 0:
-        return _create_radial_stretch_fallback(object_name, mass_msun, distance_pc)
+        print("[WARNING] SEG Performance: No objects near Schwarzschild radius!")
+        print("[INFO] This database contains normal stars (r/r_s ~ 10^13)")
+        print("[INFO] SEG vs GR comparison only meaningful for r/r_s < 100")
+        print("[INFO] Need compact objects (black holes, neutron stars) for this plot!")
+        return None
     
     # Convert to DataFrame and bin by radius
     df = pd.DataFrame(results)
