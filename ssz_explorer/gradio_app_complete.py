@@ -1407,15 +1407,15 @@ When complete, the enriched database will be AUTO-SAVED!
         - c_fov, c_ra, c_dec: Constellation view parameters
         - dom_show: Domains show_objects checkbox
         
-        Outputs (11 total):
-        - Status text, 2D/3D Sky Maps, Constellation, Physics plots
+        Outputs (13 total):
+        - Status text (x3 for all tabs), 2D/3D Sky Maps, Constellation, Physics plots
         """
         print(f"[MEGA UPDATE] Selecting object {idx} (HQ={hq})...")
         
         # 0. Skip if no selection (avoids clearing plots on search)
         if idx is None:
             print("[MEGA UPDATE] Skipped (None selection)")
-            return (gr.skip(),) * 11
+            return (gr.skip(),) * 13
         
         # 1. Update Selection
         status = select_object(idx) if idx is not None else "❌ No object selected"
@@ -1432,10 +1432,12 @@ When complete, the enriched database will be AUTO-SAVED!
         fig_combined = plot_combined()
         fig_seg = plot_seg_performance()
         
-        print(f"[MEGA UPDATE] Complete! Updated 11 outputs.")
+        print(f"[MEGA UPDATE] Complete! Updated 13 outputs.")
         
         return (
-            status,          # vis_object_status
+            status,          # vis_object_status (Tab 2)
+            status,          # physics_object_status (Tab 3)
+            status,          # object_info (Tab 1.5)
             fig_2d,          # skymap_plot
             fig_3d,          # skymap_3d_plot
             fig_const,       # const_plot
@@ -1452,72 +1454,108 @@ When complete, the enriched database will be AUTO-SAVED!
     # WIRING & EVENTS (The "Alive" UX)
     # ========================================================================
     
-    # 1. Auto-Update on Object Selection (Dropdown)
+    # Common inputs for all triggers
+    mega_inputs = [
+        high_quality_chk,      # Global setting from Tab 2
+        const_fov,             # Tab 2
+        const_ra,              # Tab 2
+        const_dec,             # Tab 2
+        domains_show_objects   # Tab 3
+    ]
+    
+    # Common outputs for all triggers
+    mega_outputs = [
+        vis_object_status,
+        physics_object_status,
+        object_info,
+        skymap_plot,
+        skymap_3d_plot,
+        const_plot,
+        const_ra,
+        const_dec,
+        domains_plot,
+        dilation_plot,
+        stretch_plot,
+        combined_plot,
+        seg_perf_plot
+    ]
+    
+    # --- TAB 2: VISUALIZATIONS (Master Control) ---
+    
+    # 1. Dropdown Change
     vis_object_dropdown.change(
         fn=on_select_update_all,
-        inputs=[
-            vis_object_dropdown,
-            high_quality_chk,
-            const_fov,
-            const_ra,
-            const_dec,
-            domains_show_objects
-        ],
-        outputs=[
-            vis_object_status,
-            skymap_plot,
-            skymap_3d_plot,
-            const_plot,
-            const_ra,
-            const_dec,
-            domains_plot,
-            dilation_plot,
-            stretch_plot,
-            combined_plot,
-            seg_perf_plot
-        ]
+        inputs=[vis_object_dropdown] + mega_inputs,
+        outputs=mega_outputs
     )
     
-    # 2. Manual Button (Backup)
+    # 2. Select Button
     vis_select_btn.click(
         fn=on_select_update_all,
-        inputs=[
-            vis_object_dropdown,
-            high_quality_chk,
-            const_fov,
-            const_ra,
-            const_dec,
-            domains_show_objects
-        ],
-        outputs=[
-            vis_object_status,
-            skymap_plot,
-            skymap_3d_plot,
-            const_plot,
-            const_ra,
-            const_dec,
-            domains_plot,
-            dilation_plot,
-            stretch_plot,
-            combined_plot,
-            seg_perf_plot
-        ]
+        inputs=[vis_object_dropdown] + mega_inputs,
+        outputs=mega_outputs
     )
     
-    # 3. Search on Enter
+    # 3. Search Submit
     vis_search.submit(
         fn=vis_quick_search,
         inputs=vis_search,
         outputs=[vis_object_dropdown, vis_object_status]
     )
     
-    # 4. Fluid 3D Navigation (Update on Slider Release)
+    # 4. Slider Release (Fluid 3D)
     for slider in [nav_distance, nav_h_angle, nav_v_angle]:
         slider.release(
             fn=generate_3d_centered,
             inputs=[nav_distance, nav_h_angle, nav_v_angle, high_quality_chk],
             outputs=skymap_3d_plot
         )
+        
+    # --- TAB 3: PHYSICS (Synced) ---
+    
+    # 5. Physics Dropdown Change
+    physics_object_dropdown.change(
+        fn=on_select_update_all,
+        inputs=[physics_object_dropdown] + mega_inputs,
+        outputs=mega_outputs
+    )
+    
+    # 6. Physics Select Button
+    physics_select_btn.click(
+        fn=on_select_update_all,
+        inputs=[physics_object_dropdown] + mega_inputs,
+        outputs=mega_outputs
+    )
+    
+    # 7. Physics Search Submit
+    physics_search.submit(
+        fn=physics_quick_search,
+        inputs=physics_search,
+        outputs=[physics_object_dropdown, physics_object_status]
+    )
+    
+    # --- TAB 1.5: OBJECT SEARCH (Synced) ---
+    
+    # 8. Search Tab Dropdown
+    search_results.change(
+        fn=on_select_update_all,
+        inputs=[search_results] + mega_inputs,
+        outputs=mega_outputs
+    )
+    
+    # 9. Search Tab Select Button
+    select_btn.click(
+        fn=on_select_update_all,
+        inputs=[search_results] + mega_inputs,
+        outputs=mega_outputs
+    )
+    
+    # 10. Search Tab Submit
+    search_input.submit(
+        fn=on_search,
+        inputs=search_input,
+        outputs=[search_results, search_status]
+    )
     
     gr.Markdown("""
     ---
