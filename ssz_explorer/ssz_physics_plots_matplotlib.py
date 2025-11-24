@@ -538,13 +538,15 @@ def create_combined_analysis_png(object_name="Sgr A*", mass_msun=1.0, distance_p
     r_s = r_schwarzschild(M)
     r_s_pc = r_s / PC_TO_M
     
-    # PAPER MATH
-    r_c_pc = R_C
-    r_c_eff_pc = r_c_pc * r_s_pc
+    # PAPER MATH - CORRECTED!
+    # R_C is dimensionless (1.9), r_c is in units of r_s
+    r_c_eff_pc = R_C * r_s_pc  # Effective r_c in parsecs
     
     # Generate data points
-    r_min_pc = max(r_c_eff_pc * 0.1, 1e-6)
-    r_max_pc = min(distance_pc * 10, 1e4)
+    # For normal stars: r_s_pc ~ 1e-13 pc, so r_c ~ 2e-13 pc
+    # We need to span from near r_c to the observation distance
+    r_min_pc = max(r_c_eff_pc * 0.01, 1e-15)  # Start very close to center
+    r_max_pc = min(distance_pc * 2, 1e5)  # Up to twice the distance
     n_points = 12
     r_data_pc = np.logspace(np.log10(r_min_pc), np.log10(r_max_pc), n_points)
     r_data = r_data_pc * PC_TO_M
@@ -563,9 +565,9 @@ def create_combined_analysis_png(object_name="Sgr A*", mass_msun=1.0, distance_p
     from matplotlib.ticker import ScalarFormatter
     for i, ax in enumerate(axes):
         ax.set_facecolor('#000010')
-        ax.axvspan(r_min_pc, r_c_pc, alpha=0.1, color='red')
-        ax.axvspan(r_c_pc, r_max_pc, alpha=0.1, color='green')
-        ax.axvline(r_c_pc, color='red', linestyle='--', linewidth=1.5, alpha=0.7, zorder=5)
+        ax.axvspan(r_min_pc, r_c_eff_pc, alpha=0.1, color='red', label='g₂ domain' if i==0 else '')
+        ax.axvspan(r_c_eff_pc, r_max_pc, alpha=0.1, color='green', label='g₁ domain' if i==0 else '')
+        ax.axvline(r_c_eff_pc, color='red', linestyle='--', linewidth=1.5, alpha=0.7, zorder=5)
         ax.set_xscale('log')
         ax.xaxis.set_major_formatter(ScalarFormatter())
         ax.ticklabel_format(style='scientific', axis='x', scilimits=(0,0))
@@ -603,7 +605,7 @@ def create_combined_analysis_png(object_name="Sgr A*", mass_msun=1.0, distance_p
     plt.tight_layout(rect=[0, 0, 1, 0.96])
     
     # Add object info at top
-    fig.text(0.5, 0.98, f'Combined SSZ Analysis: {object_name} | M={mass_msun:.2f} M☉ | d={distance_pc:.1f} pc | r_c={r_c_pc:.2f} pc', 
+    fig.text(0.5, 0.98, f'Combined SSZ Analysis: {object_name} | M={mass_msun:.2f} M☉ | d={distance_pc:.1f} pc | r_c={r_c_eff_pc:.2e} pc', 
              fontsize=13, color='white', ha='center', va='top', fontweight='bold',
              bbox=dict(boxstyle='round,pad=0.7', facecolor='#1a1a2e', edgecolor='orange', alpha=0.9))
     
