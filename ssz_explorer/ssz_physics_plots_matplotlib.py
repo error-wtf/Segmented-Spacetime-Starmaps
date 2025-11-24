@@ -67,17 +67,17 @@ def create_domains_plot_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=100
     r_s = r_schwarzschild(M)
     r_s_pc = r_s / PC_TO_M
     
-    # PAPER MATH: r_c is CONSTANT 1.9 pc, but effective scale is r_c * r_s
-    r_c_pc = R_C  # KONSTANT 1.9 pc
-    r_c_eff_pc = r_c_pc * r_s_pc  # Effective scale (used in exponential)
-    print(f"  r_c (constant): {r_c_pc:.2f} pc")
-    print(f"  r_c * r_s (effective scale): {r_c_eff_pc:.2e} pc")
+    # PAPER MATH: R_C is DIMENSIONLESS (1.9), r_c is in units of r_s
+    # CORRECTED: r_c_eff_pc is the effective radius in parsecs
+    r_c_eff_pc = R_C * r_s_pc  # Effective scale (R_C * r_s in pc)
+    print(f"  R_C (dimensionless): {R_C}")
     print(f"  r_s: {r_s_pc:.2e} pc")
+    print(f"  r_c_eff = R_C * r_s: {r_c_eff_pc:.2e} pc")
     print(f"{'='*80}\n")
     
     # Generate synthetic "measurement points" (10-15 points)
-    r_min_pc = max(r_c_eff_pc * 0.1, 1e-6)
-    r_max_pc = min(distance_pc * 10, 1e4)
+    r_min_pc = max(r_c_eff_pc * 0.01, 1e-15)
+    r_max_pc = min(distance_pc * 2, 1e5)
     n_points = 12
     r_data_pc = np.logspace(np.log10(r_min_pc), np.log10(r_max_pc), n_points)
     r_data = r_data_pc * PC_TO_M
@@ -100,11 +100,11 @@ def create_domains_plot_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=100
     ax.set_facecolor('#000010')
     
     # DOMAIN SHADING (like paper plots)
-    ax.axvspan(r_min_pc, r_c_pc, alpha=0.15, color='red', label='g₂ domain (collapse)')
-    ax.axvspan(r_c_pc, r_max_pc, alpha=0.15, color='green', label='g₁ domain (stable)')
+    ax.axvspan(r_min_pc, r_c_eff_pc, alpha=0.15, color='red', label='g₂ domain (collapse)')
+    ax.axvspan(r_c_eff_pc, r_max_pc, alpha=0.15, color='green', label='g₁ domain (stable)')
     
     # SHARP BREAK LINE at r_c
-    ax.axvline(r_c_pc, color='red', linestyle='--', linewidth=2.5, label=f'Sharp break: r_c = {r_c_pc:.2f} pc', zorder=5)
+    ax.axvline(r_c_eff_pc, color='red', linestyle='--', linewidth=2.5, label=f'Sharp break: r_c = {r_c_eff_pc:.2e} pc', zorder=5)
     
     # Plot DATA POINTS (white on dark background)
     ax.scatter(r_data_pc, xi_data, color='white', s=80, zorder=10, label='Data points', edgecolors='cyan', linewidths=1.5)
@@ -113,7 +113,7 @@ def create_domains_plot_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=100
     if len(r_g2) > 1:
         # Linear fit in log-space for g₂
         coeffs_g2 = np.polyfit(np.log10(r_g2), xi_g2, 1)
-        r_g2_fine = np.logspace(np.log10(r_g2.min()), np.log10(r_c_pc), 100)
+        r_g2_fine = np.logspace(np.log10(r_g2.min()), np.log10(r_c_eff_pc), 100)
         xi_g2_fit = np.polyval(coeffs_g2, np.log10(r_g2_fine))
         ax.plot(r_g2_fine, xi_g2_fit, 'r-', linewidth=3, label=f'g₂ fit (steep, slope={coeffs_g2[0]:.3f})', zorder=8)
     
@@ -121,7 +121,7 @@ def create_domains_plot_png(object_name="Sgr A*", mass_msun=1.0, distance_pc=100
     if len(r_g1) > 1:
         # Linear fit in log-space for g₁
         coeffs_g1 = np.polyfit(np.log10(r_g1), xi_g1, 1)
-        r_g1_fine = np.logspace(np.log10(r_c_pc), np.log10(r_g1.max()), 100)
+        r_g1_fine = np.logspace(np.log10(r_c_eff_pc), np.log10(r_g1.max()), 100)
         xi_g1_fit = np.polyval(coeffs_g1, np.log10(r_g1_fine))
         ax.plot(r_g1_fine, xi_g1_fit, 'g-', linewidth=3, label=f'g₁ fit (flat, slope={coeffs_g1[0]:.3f})', zorder=8)
         
