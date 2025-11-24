@@ -382,7 +382,7 @@ For more information, see:
 - SSZ Projection Suite: [GitHub Repository](https://github.com/error-wtf/Segmented-Spacetime-Mass-Projection-Unified-Results)
 - SSZ Metric: [Github Repository](https://github.com/error-wtf/ssz-metric-pure)
 - SSZ All Physics Plots: [Github Repository](https://github.com/error-wtf/ssz-paper-plots)
-- Papers: [Papers folder in main SSZ repo](https://www.researchgate.net/profile/Carmen-Wrede)
+- Papers: [Researchgate](https://www.researchgate.net/profile/Carmen-Wrede)
 
 ---
 
