@@ -906,7 +906,7 @@ When complete, the enriched database will be AUTO-SAVED!
                             maximum=1000,
                             value=100,
                             step=10,
-                            label="Camera Distance (ly)"
+                            label="Camera Distance (pc)"
                         )
                         
                         nav_h_angle = gr.Slider(
