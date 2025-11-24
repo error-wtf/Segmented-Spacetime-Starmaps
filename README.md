@@ -4,8 +4,17 @@
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/error-wtf/Segmented-Spacetime-Starmaps/blob/main/SSZ_Explorer_Gradio_Colab.ipynb)
 
-**Click the badge above** → Run all cells → Get public Gradio link in 2-3 minutes!  
-👉 Interactive Physics Plots with Sharp Break Analysis at r_c
+**Click the badge above** to launch the full interactive dashboard in Google Colab!
+
+### What you get:
+- 🌌 **228,661 real stars** from GAIA DR3
+- 🗺️ **2D & 3D sky maps** with interactive selection
+- ⚛️ **SSZ physics plots** (Time Dilation, Domains, Radial Stretch)
+- 🔍 **Object search** by name, ID, or coordinates
+- 📊 **Auto-updating plots** when you select objects
+- 📖 **Complete user guide** built into the notebook
+
+**Setup time:** ~2 minutes | **No installation needed** | **Public link for sharing**
 
 ---
 
