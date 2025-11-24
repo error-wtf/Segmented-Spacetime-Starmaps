@@ -177,12 +177,12 @@ def generate_sky_map(high_quality=False):
     if selected_object is not None:
         obj = selected_object
         obj_name = obj.get('name', f"ID:{obj['source_id']}")
-        fig.add_trace(go.Scattergeo(
-            lon=[obj['ra']],
-            lat=[obj['dec']],
+        fig.add_trace(go.Scattergl(
+            x=[obj['ra']],
+            y=[obj['dec']],
             mode='markers',
             marker=dict(size=15, color='yellow', symbol='star', line=dict(width=3, color='red')),
-            name=f' SELECTED: {obj_name}',
+            name=f'⭐ SELECTED: {obj_name}',
             hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°",
             showlegend=True
         ))
