@@ -146,8 +146,8 @@ def load_star_database():
 # ============================================================================
 
 def generate_sky_map():
-    """Generate 2D sky map with 500k database."""
-    global last_query_data
+    """Generate 2D sky map with 500k database - with selected object highlighting."""
+    global last_query_data, selected_object
     
     # Use query data if available, otherwise use database
     if last_query_data is not None and not last_query_data.empty:
@@ -171,6 +171,20 @@ def generate_sky_map():
         title=f"🌌 Sky Map - {len(data):,} Stars (showing {len(data_sample):,})<br><sub>GAIA DR3 - Click on star for details</sub>"
     )
     
+    # Highlight selected object if any
+    if selected_object is not None:
+        obj = selected_object
+        obj_name = obj.get('name', f"ID:{obj['source_id']}")
+        fig.add_trace(go.Scattergeo(
+            lon=[obj['ra']],
+            lat=[obj['dec']],
+            mode='markers',
+            marker=dict(size=15, color='yellow', symbol='star', line=dict(width=3, color='red')),
+            name=f'⭐ SELECTED: {obj_name}',
+            hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°",
+            showlegend=True
+        ))
+    
     # Enable click mode
     fig.update_layout(clickmode='event+select')
     
@@ -178,8 +192,8 @@ def generate_sky_map():
 
 
 def generate_3d_sky_map():
-    """Generate 3D sky map with 50k database - COLAB OPTIMIZED."""
-    global last_query_data
+    """Generate 3D sky map with 50k database - COLAB OPTIMIZED with selected object."""
+    global last_query_data, selected_object
     
     # Detect Colab environment
     try:
@@ -208,10 +222,27 @@ def generate_3d_sky_map():
         data_sample = data.copy()
         subtitle = f"{len(data):,} stars"
     
-    return create_3d_sky_map(
+    fig = create_3d_sky_map(
         data_sample,
         title=f"🌌 3D Sky Map - {subtitle}<br><sub>GAIA DR3</sub>"
     )
+    
+    # Highlight selected object if any
+    if selected_object is not None:
+        obj = selected_object
+        obj_name = obj.get('name', f"ID:{obj['source_id']}")
+        fig.add_trace(go.Scatter3d(
+            x=[obj['ra']],
+            y=[obj['dec']],
+            z=[obj['distance_ly']],
+            mode='markers',
+            marker=dict(size=12, color='yellow', symbol='diamond', line=dict(width=3, color='red')),
+            name=f'⭐ SELECTED: {obj_name}',
+            hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly",
+            showlegend=True
+        ))
+    
+    return fig
 
 
 def generate_constellation_map(ra, dec, fov):
@@ -769,6 +800,58 @@ When complete, the enriched database will be AUTO-SAVED!
     with gr.Tab("📊 Visualizations"):
         gr.Markdown("### Interactive Star Maps")
         
+        # GEMEINSAME OBJEKTAUSWAHL FÜR ALLE VISUALISIERUNGEN
+        gr.Markdown("---")
+        gr.Markdown("### 🔍 Select Object for Highlighting")
+        
+        with gr.Row():
+            with gr.Column(scale=2):
+                vis_search = gr.Textbox(
+                    label="Quick Search",
+                    placeholder="Search for object (e.g., 'Sgr A*', 'Betelgeuse')",
+                    scale=2
+                )
+                vis_search_btn = gr.Button("🔍 Find Object", size="sm")
+            
+            with gr.Column(scale=3):
+                vis_object_dropdown = gr.Dropdown(
+                    label="Select Object to Highlight",
+                    choices=[],
+                    interactive=True
+                )
+                vis_select_btn = gr.Button("✅ Select Object", variant="primary")
+            
+            with gr.Column(scale=2):
+                vis_object_status = gr.Markdown("**No object selected**")
+        
+        # Functions for object selection
+        def vis_quick_search(term):
+            results, status = search_object(term)
+            if results:
+                return gr.Dropdown(choices=results, value=results[0][1]), status
+            return gr.Dropdown(choices=[]), status
+        
+        def vis_select_object(idx):
+            if idx is None:
+                return "❌ No object selected"
+            info = select_object(idx)
+            return info
+        
+        # Wire up buttons
+        vis_search_btn.click(
+            fn=vis_quick_search,
+            inputs=vis_search,
+            outputs=[vis_object_dropdown, vis_object_status]
+        )
+        
+        vis_select_btn.click(
+            fn=vis_select_object,
+            inputs=vis_object_dropdown,
+            outputs=vis_object_status
+        )
+        
+        gr.Markdown("---")
+        
         with gr.Tabs():
             # Sub-Tab: 2D Sky Map
             with gr.Tab("Sky Map (2D)"):
@@ -913,29 +996,9 @@ When complete, the enriched database will be AUTO-SAVED!
             
             # Sub-Tab: Constellation View
             with gr.Tab("Constellation View"):
-                gr.Markdown("**Focus on specific region - Search object or enter coordinates**")
+                gr.Markdown("**Focus on specific region - Use object selector above or enter coordinates**")
                 
-                # Object Selector (wie im SSZ Physics Tab)
-                with gr.Row():
-                    with gr.Column(scale=2):
-                        gr.Markdown("**🔍 Select Object to Center On:**")
-                        const_search = gr.Textbox(
-                            label="Quick Search",
-                            placeholder="Sag A*, Betelgeuse, M31...",
-                            scale=2
-                        )
-                        const_search_btn = gr.Button("🔍 Find Object", size="sm")
-                    
-                    with gr.Column(scale=3):
-                        const_object_dropdown = gr.Dropdown(
-                            label="Select Object",
-                            choices=[],
-                            interactive=True
-                        )
-                        const_center_btn = gr.Button("🎯 Center on Selected Object", variant="primary")
-                    
-                    with gr.Column(scale=2):
-                        const_object_status = gr.Markdown("**No object selected**")
+                const_center_btn = gr.Button("🎯 Center on Selected Object", variant="primary", size="lg")
                 
                 gr.Markdown("**OR Manual Coordinates:**")
                 
@@ -949,40 +1012,27 @@ When complete, the enriched database will be AUTO-SAVED!
                     with gr.Column():
                         const_plot = gr.Plot(label="Region View")
                 
-                # Functions for object selection
-                def const_quick_search(term):
-                    results, status = search_object(term)
-                    if results:
-                        return gr.Dropdown(choices=results, value=results[0][1]), status
-                    return gr.Dropdown(choices=[]), status
-                
-                def const_center_on_object(idx, fov, current_ra, current_dec):
-                    if idx is None:
-                        return None, current_ra, current_dec, "❌ No object selected"
+                # Function for centering on selected object
+                def const_center_on_object(fov, current_ra, current_dec):
+                    global selected_object
+                    if selected_object is None:
+                        return None, current_ra, current_dec
                     
                     # Get object info
-                    obj = star_database[star_database['source_id'] == idx].iloc[0]
+                    obj = selected_object
                     ra = obj['ra']
                     dec = obj['dec']
-                    obj_name = obj.get('name', f"ID:{obj['source_id']}")
                     
                     # Generate map centered on object
                     fig = generate_constellation_map(ra, dec, fov)
-                    status = f"✅ **Centered on: {obj_name}**\nRA: {ra:.2f}° | Dec: {dec:.2f}° | FOV: {fov}°"
                     
-                    return fig, ra, dec, status
+                    return fig, ra, dec
                 
-                # Wire up buttons
-                const_search_btn.click(
-                    fn=const_quick_search,
-                    inputs=const_search,
-                    outputs=[const_object_dropdown, const_object_status]
-                )
-                
+                # Wire up button
                 const_center_btn.click(
                     fn=const_center_on_object,
-                    inputs=[const_object_dropdown, const_fov, const_ra, const_dec],
-                    outputs=[const_plot, const_ra, const_dec, const_object_status]
+                    inputs=[const_fov, const_ra, const_dec],
+                    outputs=[const_plot, const_ra, const_dec]
                 )
                 
                 const_manual_btn.click(
