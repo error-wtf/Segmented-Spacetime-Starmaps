@@ -1110,10 +1110,16 @@ When complete, the enriched database will be AUTO-SAVED!
                 
                 def plot_seg_performance():
                     try:
-                        global star_database
-                        print(f"[DEBUG] SEG Performance: Computing for {len(star_database)} objects")
                         from ssz_physics_plots_matplotlib import create_seg_performance_png
-                        result = create_seg_performance_png(star_database)
+                        if selected_object is not None:
+                            mass_msun = selected_object['mass_msun']
+                            obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
+                            distance_pc = selected_object.get('distance', 8000.0)
+                            print(f"[DEBUG] SEG Performance: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
+                            result = create_seg_performance_png(obj_name, mass_msun, distance_pc)
+                        else:
+                            print("[DEBUG] SEG Performance: Using default Sgr A*")
+                            result = create_seg_performance_png("Sgr A*", 4.3e6, 8000.0)
                         print(f"[DEBUG] Result: {result}")
                         return result
                     except Exception as e:
