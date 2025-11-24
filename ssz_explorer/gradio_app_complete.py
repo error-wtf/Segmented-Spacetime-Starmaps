@@ -1407,22 +1407,27 @@ When complete, the enriched database will be AUTO-SAVED!
         - c_fov, c_ra, c_dec: Constellation view parameters
         - dom_show: Domains show_objects checkbox
         
-        Outputs (13 total):
-        - Status text (x3 for all tabs), 2D/3D Sky Maps, Constellation, Physics plots
+        Outputs (16 total):
+        - Status (x3), 2D Map, 3D Map (Centered), 3D Sliders (x3), Constellation, Physics
         """
         print(f"[MEGA UPDATE] Selecting object {idx} (HQ={hq})...")
         
-        # 0. Skip if no selection (avoids clearing plots on search)
+        # 0. Skip if no selection
         if idx is None:
             print("[MEGA UPDATE] Skipped (None selection)")
-            return (gr.skip(),) * 13
+            return (gr.skip(),) * 16
         
         # 1. Update Selection
         status = select_object(idx) if idx is not None else "❌ No object selected"
         
         # 2. Update Visualizations
         fig_2d = generate_sky_map(hq)
+        
+        # Show global 3D view (with object highlighted)
+        # User can manually click "Center" button to zoom in
         fig_3d = generate_3d_sky_map(hq)
+        new_dist, new_h, new_v = gr.skip(), gr.skip(), gr.skip()  # Don't reset sliders
+        
         fig_const, new_ra, new_dec = const_center_on_object(c_fov, c_ra, c_dec, hq)
         
         # 3. Update Physics Plots
@@ -1432,14 +1437,17 @@ When complete, the enriched database will be AUTO-SAVED!
         fig_combined = plot_combined()
         fig_seg = plot_seg_performance()
         
-        print(f"[MEGA UPDATE] Complete! Updated 13 outputs.")
+        print(f"[MEGA UPDATE] Complete! Updated 16 outputs.")
         
         return (
-            status,          # vis_object_status (Tab 2)
-            status,          # physics_object_status (Tab 3)
-            status,          # object_info (Tab 1.5)
+            status,          # vis_object_status
+            status,          # physics_object_status
+            status,          # object_info
             fig_2d,          # skymap_plot
             fig_3d,          # skymap_3d_plot
+            new_dist,        # nav_distance (Reset)
+            new_h,           # nav_h_angle (Reset)
+            new_v,           # nav_v_angle (Reset)
             fig_const,       # const_plot
             new_ra,          # const_ra
             new_dec,         # const_dec
@@ -1463,13 +1471,16 @@ When complete, the enriched database will be AUTO-SAVED!
         domains_show_objects   # Tab 3
     ]
     
-    # Common outputs for all triggers
+    # Common outputs for all triggers (16 items)
     mega_outputs = [
         vis_object_status,
         physics_object_status,
         object_info,
         skymap_plot,
         skymap_3d_plot,
+        nav_distance,    # Reset 3D view
+        nav_h_angle,     # Reset 3D view
+        nav_v_angle,     # Reset 3D view
         const_plot,
         const_ra,
         const_dec,
