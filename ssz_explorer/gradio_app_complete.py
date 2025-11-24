@@ -1212,20 +1212,68 @@ When complete, the enriched database will be AUTO-SAVED!
 def launch_app(share=False, port=9500):
     """Launch the complete SSZ Explorer."""
     print(f"[3/3] Launching on Port {port}...")
-    print(f"      Open browser: http://localhost:{port}")
+    
+    # Detect if running in Colab
+    try:
+        import google.colab
+        in_colab = True
+        share = True  # Force share=True in Colab
+        print("      🌐 Running in Google Colab - generating PUBLIC link...")
+    except:
+        in_colab = False
+        print(f"      Open browser: http://localhost:{port}")
+    
     print("="*80)
-    app.launch(share=share, server_name="0.0.0.0", server_port=port)
+    
+    # Launch and capture the public URL
+    result = app.launch(share=share, server_name="0.0.0.0", server_port=port, prevent_thread_lock=False)
+    
+    # Explicitly print the share link if in Colab
+    if share and in_colab:
+        print("\n" + "="*80)
+        print("🌐 PUBLIC GRADIO LINK:")
+        # Try to get the share URL from the Gradio app object
+        if hasattr(app, 'share_url') and app.share_url:
+            print(f"   {app.share_url}")
+        elif hasattr(app, 'local_url'):
+            print(f"   Local: {app.local_url}")
+            if hasattr(app, 'share_url'):
+                print(f"   Public: {app.share_url}")
+        else:
+            print("   Generating... (wait ~30 seconds)")
+            print("   Look for the link above that starts with: https://xxxxx.gradio.live")
+        print("="*80 + "\n")
+
+
+def launch_in_colab():
+    """
+    COLAB-SPECIFIC LAUNCHER
+    
+    Use this in Google Colab:
+    >>> from gradio_app_complete import launch_in_colab
+    >>> launch_in_colab()
+    """
+    print("="*80)
+    print("LAUNCHING SSZ EXPLORER IN GOOGLE COLAB")
+    print("="*80)
+    launch_app(share=True, port=7860)
 
 
 if __name__ == "__main__":
-    # Try ports until we find a free one
-    for port in [7860, 7861, 7862, 9500]:
-        try:
-            import socket
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.bind(('', port))
-            s.close()
-            launch_app(share=False, port=port)
-            break
-        except:
-            continue
+    # Check if in Colab first
+    try:
+        import google.colab
+        print("🌐 Detected Google Colab - launching with public link...")
+        launch_in_colab()
+    except:
+        # Try ports until we find a free one
+        for port in [7860, 7861, 7862, 9500]:
+            try:
+                import socket
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.bind(('', port))
+                s.close()
+                launch_app(share=False, port=port)
+                break
+            except OSError:
+                continue
