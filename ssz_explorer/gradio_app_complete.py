@@ -866,19 +866,79 @@ When complete, the enriched database will be AUTO-SAVED!
             
             # Sub-Tab: Constellation View
             with gr.Tab("Constellation View"):
-                gr.Markdown("**Focus on specific region**")
+                gr.Markdown("**Focus on specific region - Search object or enter coordinates**")
+                
+                # Object Selector (wie im SSZ Physics Tab)
+                with gr.Row():
+                    with gr.Column(scale=2):
+                        gr.Markdown("**🔍 Select Object to Center On:**")
+                        const_search = gr.Textbox(
+                            label="Quick Search",
+                            placeholder="Sag A*, Betelgeuse, M31...",
+                            scale=2
+                        )
+                        const_search_btn = gr.Button("🔍 Find Object", size="sm")
+                    
+                    with gr.Column(scale=3):
+                        const_object_dropdown = gr.Dropdown(
+                            label="Select Object",
+                            choices=[],
+                            interactive=True
+                        )
+                        const_center_btn = gr.Button("🎯 Center on Selected Object", variant="primary")
+                    
+                    with gr.Column(scale=2):
+                        const_object_status = gr.Markdown("**No object selected**")
+                
+                gr.Markdown("**OR Manual Coordinates:**")
                 
                 with gr.Row():
                     with gr.Column():
                         const_ra = gr.Number(value=266.4, label="Center RA (deg)")
                         const_dec = gr.Number(value=-29.0, label="Center Dec (deg)")
                         const_fov = gr.Number(value=30, label="Field of View (deg)")
-                        const_btn = gr.Button("🔍 Generate Region", variant="primary")
+                        const_manual_btn = gr.Button("🔍 Generate Region (Manual)", variant="secondary")
                     
                     with gr.Column():
                         const_plot = gr.Plot(label="Region View")
                 
-                const_btn.click(
+                # Functions for object selection
+                def const_quick_search(term):
+                    results, status = search_object(term)
+                    if results:
+                        return gr.Dropdown(choices=results, value=results[0][1]), status
+                    return gr.Dropdown(choices=[]), status
+                
+                def const_center_on_object(idx, fov, current_ra, current_dec):
+                    if idx is None:
+                        return None, current_ra, current_dec, "❌ No object selected"
+                    
+                    # Get object info
+                    obj = star_database[star_database['source_id'] == idx].iloc[0]
+                    ra = obj['ra']
+                    dec = obj['dec']
+                    obj_name = obj.get('name', f"ID:{obj['source_id']}")
+                    
+                    # Generate map centered on object
+                    fig = generate_constellation_map(ra, dec, fov)
+                    status = f"✅ **Centered on: {obj_name}**\nRA: {ra:.2f}° | Dec: {dec:.2f}° | FOV: {fov}°"
+                    
+                    return fig, ra, dec, status
+                
+                # Wire up buttons
+                const_search_btn.click(
+                    fn=const_quick_search,
+                    inputs=const_search,
+                    outputs=[const_object_dropdown, const_object_status]
+                )
+                
+                const_center_btn.click(
+                    fn=const_center_on_object,
+                    inputs=[const_object_dropdown, const_fov, const_ra, const_dec],
+                    outputs=[const_plot, const_ra, const_dec, const_object_status]
+                )
+                
+                const_manual_btn.click(
                     fn=generate_constellation_map,
                     inputs=[const_ra, const_dec, const_fov],
                     outputs=const_plot
