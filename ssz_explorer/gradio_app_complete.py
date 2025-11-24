@@ -1415,7 +1415,7 @@ When complete, the enriched database will be AUTO-SAVED!
         # 0. Skip if no selection
         if idx is None:
             print("[MEGA UPDATE] Skipped (None selection)")
-            return (gr.skip(),) * 16
+            return (gr.update(),) * 16  # Keep all outputs unchanged
         
         # 1. Update Selection
         status = select_object(idx) if idx is not None else "❌ No object selected"
@@ -1426,7 +1426,8 @@ When complete, the enriched database will be AUTO-SAVED!
         # Show global 3D view (with object highlighted)
         # User can manually click "Center" button to zoom in
         fig_3d = generate_3d_sky_map(hq)
-        new_dist, new_h, new_v = gr.skip(), gr.skip(), gr.skip()  # Don't reset sliders
+        # Keep sliders at current values (don't update them)
+        new_dist, new_h, new_v = gr.update(), gr.update(), gr.update()
         
         fig_const, new_ra, new_dec = const_center_on_object(c_fov, c_ra, c_dec, hq)
         
