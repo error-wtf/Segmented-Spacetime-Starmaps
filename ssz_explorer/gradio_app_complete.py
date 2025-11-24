@@ -168,7 +168,7 @@ def generate_sky_map():
     
     fig = create_sky_map(
         data_sample,
-        title=f"🌌 Sky Map - {len(data):,} Stars (showing {len(data_sample):,})<br><sub>GAIA DR3 - Click on star for details</sub>"
+        title=f" Sky Map - {len(data):,} Stars (showing {len(data_sample):,})<br><sub>GAIA DR3 - Click on star for details</sub>"
     )
     
     # Highlight selected object if any
@@ -180,7 +180,7 @@ def generate_sky_map():
             lat=[obj['dec']],
             mode='markers',
             marker=dict(size=15, color='yellow', symbol='star', line=dict(width=3, color='red')),
-            name=f'⭐ SELECTED: {obj_name}',
+            name=f' SELECTED: {obj_name}',
             hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°",
             showlegend=True
         ))
@@ -227,18 +227,29 @@ def generate_3d_sky_map():
         title=f"🌌 3D Sky Map - {subtitle}<br><sub>GAIA DR3</sub>"
     )
     
-    # Highlight selected object if any
+    # Highlight selected object if any (convert RA/Dec/dist -> 3D xyz in parsec)
     if selected_object is not None:
         obj = selected_object
         obj_name = obj.get('name', f"ID:{obj['source_id']}")
+        # Compute r in parsecs
+        r_pc = obj.get('distance_pc') if obj.get('distance_pc') is not None else None
+        if r_pc is None and obj.get('distance_ly') is not None:
+            r_pc = obj['distance_ly'] * 0.306601
+        if r_pc is None:
+            r_pc = 100.0
+        ra_rad = np.radians(obj['ra'])
+        dec_rad = np.radians(obj['dec'])
+        x0 = r_pc * np.cos(dec_rad) * np.cos(ra_rad)
+        y0 = r_pc * np.cos(dec_rad) * np.sin(ra_rad)
+        z0 = r_pc * np.sin(dec_rad)
         fig.add_trace(go.Scatter3d(
-            x=[obj['ra']],
-            y=[obj['dec']],
-            z=[obj['distance_ly']],
+            x=[x0],
+            y=[y0],
+            z=[z0],
             mode='markers',
             marker=dict(size=12, color='yellow', symbol='diamond', line=dict(width=3, color='red')),
             name=f'⭐ SELECTED: {obj_name}',
-            hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly",
+            hovertext=f"<b>SELECTED OBJECT</b><br>ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {r_pc:.1f} pc",
             showlegend=True
         ))
     
@@ -942,33 +953,51 @@ When complete, the enriched database will be AUTO-SAVED!
                     if selected_object is not None:
                         try:
                             obj = selected_object
+                            # Compute object position in 3D (pc)
+                            r_pc = obj.get('distance_pc') if obj.get('distance_pc') is not None else None
+                            if r_pc is None and obj.get('distance_ly') is not None:
+                                r_pc = obj['distance_ly'] * 0.306601
+                            if r_pc is None:
+                                r_pc = 100.0
+                            ra_rad = np.radians(obj['ra'])
+                            dec_rad = np.radians(obj['dec'])
+                            x0 = r_pc * np.cos(dec_rad) * np.cos(ra_rad)
+                            y0 = r_pc * np.cos(dec_rad) * np.sin(ra_rad)
+                            z0 = r_pc * np.sin(dec_rad)
                             
                             # Highlight selected object
                             fig.add_trace(go.Scatter3d(
-                                x=[obj['ra']],
-                                y=[obj['dec']],
-                                z=[obj['distance_ly']],
+                                x=[x0],
+                                y=[y0],
+                                z=[z0],
                                 mode='markers',
                                 marker=dict(size=10, color='yellow', symbol='diamond', line=dict(width=2, color='red')),
                                 name=f'Selected: {obj["source_id"]}',
-                                hovertext=f"ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {obj['distance_ly']:.1f} ly"
+                                hovertext=f"ID: {obj['source_id']}<br>RA: {obj['ra']:.2f}°<br>Dec: {obj['dec']:.2f}°<br>Distance: {r_pc:.1f} pc"
                             ))
                             
-                            # Set camera to look at object
-                            import numpy as np
+                            # Compute view radius (interpret 'distance' slider as parsec radius)
+                            view_r = float(distance)
                             h_rad = np.radians(h_angle)
                             v_rad = np.radians(v_angle)
                             
-                            eye_x = obj['ra'] + distance * np.cos(h_rad) * np.cos(v_rad)
-                            eye_y = obj['dec'] + distance * np.sin(h_rad) * np.cos(v_rad)
-                            eye_z = obj['distance_ly'] + distance * np.sin(v_rad)
+                            # FIX: Camera eye must be relative to center (normalized), not absolute!
+                            # Distance 1.8 gives a good view of the bounding box
+                            cam_dist = 1.8
+                            rel_x = cam_dist * np.cos(h_rad) * np.cos(v_rad)
+                            rel_y = cam_dist * np.sin(h_rad) * np.cos(v_rad)
+                            rel_z = cam_dist * np.sin(v_rad)
                             
                             fig.update_layout(
                                 scene=dict(
+                                    xaxis=dict(range=[x0 - view_r, x0 + view_r]),
+                                    yaxis=dict(range=[y0 - view_r, y0 + view_r]),
+                                    zaxis=dict(range=[z0 - view_r, z0 + view_r]),
                                     camera=dict(
-                                        eye=dict(x=eye_x, y=eye_y, z=eye_z),
-                                        center=dict(x=obj['ra'], y=obj['dec'], z=obj['distance_ly'])
-                                    )
+                                        eye=dict(x=rel_x, y=rel_y, z=rel_z),
+                                        center=dict(x=0, y=0, z=0)
+                                    ),
+                                    aspectmode='cube'
                                 )
                             )
                         except Exception as e:
@@ -982,10 +1011,14 @@ When complete, the enriched database will be AUTO-SAVED!
                     outputs=skymap_3d_plot
                 )
                 
+                # Helper to reset view and sliders
+                def reset_3d_view():
+                    return generate_3d_centered(100, 45, 30), 100, 45, 30
+
                 center_on_obj_btn.click(
-                    fn=lambda: generate_3d_centered(100, 45, 30),
+                    fn=reset_3d_view,
                     inputs=None,
-                    outputs=skymap_3d_plot
+                    outputs=[skymap_3d_plot, nav_distance, nav_h_angle, nav_v_angle]
                 )
                 
                 update_view_btn.click(

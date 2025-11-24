@@ -555,11 +555,24 @@ def create_3d_sky_map(df, title="3D Sky Map"):
     ra_rad = np.radians(df[ra_col])
     dec_rad = np.radians(df[dec_col])
     
-    # Use distance if available, otherwise unit sphere
-    if dist_col and dist_col in df.columns:
-        r = df[dist_col].clip(1, 1000)  # Clip extreme values
+    # Use distance in parsecs if available. Prefer distance_pc; convert distance_ly if needed.
+    if 'distance_pc' in df.columns:
+        r = df['distance_pc'].clip(1e-3, 1e5)
+        color_values = r
+        color_title = 'Distance (pc)'
+    elif 'distance_ly' in df.columns:
+        r = (df['distance_ly'] * 0.306601).clip(1e-3, 1e5)  # ly -> pc
+        color_values = r
+        color_title = 'Distance (pc)'
+    elif dist_col and dist_col in df.columns:
+        # Fallback: unknown unit, assume parsec
+        r = df[dist_col].clip(1e-3, 1e5)
+        color_values = r
+        color_title = 'Distance (arb)'
     else:
-        r = np.ones(len(df)) * 100  # Unit sphere at radius 100
+        r = np.ones(len(df)) * 100  # default sphere radius
+        color_values = list(np.random.rand(len(df)))
+        color_title = 'Index'
     
     # Cartesian coordinates
     x = r * np.cos(dec_rad) * np.cos(ra_rad)
@@ -613,8 +626,11 @@ def create_3d_sky_map(df, title="3D Sky Map"):
         text = f"<b>🌟 {object_name}</b><br>" if object_name else "<b>Object</b><br>"
         text += f"<b>RA:</b> {row[ra_col]:.5f}°<br>"
         text += f"<b>Dec:</b> {row[dec_col]:.2f}°<br>"
-        if dist_col and dist_col in df.columns:
-            text += f"<b>Distance:</b> {row[dist_col]:.2f} pc<br>"
+        # Show distance in parsecs if available
+        if 'distance_pc' in df.columns and pd.notna(row.get('distance_pc', np.nan)):
+            text += f"<b>Distance:</b> {row['distance_pc']:.2f} pc<br>"
+        elif 'distance_ly' in df.columns and pd.notna(row.get('distance_ly', np.nan)):
+            text += f"<b>Distance:</b> {row['distance_ly'] * 0.306601:.2f} pc<br>"
         
         # Get current position using enumerate index i
         current_x = x.iloc[i] if hasattr(x, 'iloc') else x[i]
@@ -642,16 +658,15 @@ def create_3d_sky_map(df, title="3D Sky Map"):
         mode='markers',
         marker=dict(
             size=4,
-            color=r.tolist() if dist_col else list(np.random.rand(len(df))),
-            colorscale='Turbo' if dist_col else 'Viridis',
+            color=color_values if isinstance(color_values, list) else color_values.tolist(),
+            colorscale='Turbo',
             colorbar=dict(
-                title='Distance (pc)' if dist_col else 'Index',
+                title=color_title,
                 len=0.7,
                 thickness=20
             ),
             opacity=0.9,
             line=dict(width=0.5, color='rgba(255,255,255,0.3)'),
-            # Selection styling for 3D
             showscale=True
         ),
         text=hover_texts,
