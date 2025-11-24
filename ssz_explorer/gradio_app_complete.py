@@ -145,7 +145,7 @@ def load_star_database():
 # SKY MAP FUNKTIONEN
 # ============================================================================
 
-def generate_sky_map():
+def generate_sky_map(high_quality=False):
     """Generate 2D sky map with 500k database - with selected object highlighting."""
     global last_query_data, selected_object
     
@@ -155,10 +155,12 @@ def generate_sky_map():
     else:
         data = load_star_database()
     
+    limit = 50000 if high_quality else 10000
+    
     # Sample for performance if too many
-    if len(data) > 10000:
+    if len(data) > limit:
         import random
-        indices = sorted(random.sample(range(len(data)), 10000))
+        indices = sorted(random.sample(range(len(data)), limit))
         data_sample = data.iloc[indices].copy()
         # Store indices for click mapping
         data_sample['original_index'] = indices
@@ -191,7 +193,7 @@ def generate_sky_map():
     return fig
 
 
-def generate_3d_sky_map():
+def generate_3d_sky_map(high_quality=False):
     """Generate 3D sky map with 50k database - COLAB OPTIMIZED with selected object."""
     global last_query_data, selected_object
     
@@ -199,10 +201,10 @@ def generate_3d_sky_map():
     try:
         import google.colab
         in_colab = True
-        max_stars = 1000  # MUCH smaller for Colab
+        max_stars = 5000 if high_quality else 1000  # Boost for Colab High Quality
     except:
         in_colab = False
-        max_stars = 5000  # Reasonable for local
+        max_stars = 50000 if high_quality else 5000  # Local High Quality
     
     # Use query data if available, otherwise use database
     if last_query_data is not None and not last_query_data.empty:
@@ -256,15 +258,15 @@ def generate_3d_sky_map():
     return fig
 
 
-def generate_constellation_map(ra, dec, fov):
+def generate_constellation_map(ra, dec, fov, high_quality=False):
     """Generate constellation map for specific region - COLAB OPTIMIZED."""
     try:
         # Detect Colab
         try:
             import google.colab
-            max_stars = 2000  # Limit for Colab
+            max_stars = 5000 if high_quality else 2000
         except:
-            max_stars = 5000  # Limit for local
+            max_stars = 50000 if high_quality else 5000
         
         db = load_star_database()
         
@@ -831,6 +833,7 @@ When complete, the enriched database will be AUTO-SAVED!
                     interactive=True
                 )
                 vis_select_btn = gr.Button("✅ Select Object", variant="primary")
+                high_quality_chk = gr.Checkbox(label="🎨 High Quality (Local only)", value=False, info="50k stars vs 5k")
             
             with gr.Column(scale=2):
                 vis_object_status = gr.Markdown("**No object selected**")
@@ -855,11 +858,7 @@ When complete, the enriched database will be AUTO-SAVED!
             outputs=[vis_object_dropdown, vis_object_status]
         )
         
-        vis_select_btn.click(
-            fn=vis_select_object,
-            inputs=vis_object_dropdown,
-            outputs=vis_object_status
-        )
+        # vis_select_btn.click - will be wired at the end with mega update
         
         gr.Markdown("---")
         
@@ -878,7 +877,7 @@ When complete, the enriched database will be AUTO-SAVED!
                 
                 skymap_btn.click(
                     fn=generate_sky_map,
-                    inputs=None,
+                    inputs=high_quality_chk,
                     outputs=skymap_plot
                 )
                 
@@ -927,15 +926,15 @@ When complete, the enriched database will be AUTO-SAVED!
                         
                         update_view_btn = gr.Button("🔄 Update View", variant="primary")
                 
-                def generate_3d_centered(distance, h_angle, v_angle):
+                def generate_3d_centered(distance, h_angle, v_angle, high_quality=False):
                     """Generate 3D map centered on selected object - COLAB OPTIMIZED."""
                     # Detect Colab
                     try:
                         import google.colab
-                        max_stars = 500  # VERY small for Colab
+                        max_stars = 2000 if high_quality else 500  # VERY small for Colab
                         mode_txt = " (Colab)"
                     except:
-                        max_stars = 1000  # Small for local
+                        max_stars = 10000 if high_quality else 1000  # Local
                         mode_txt = ""
                     
                     data = load_star_database()
@@ -1007,23 +1006,23 @@ When complete, the enriched database will be AUTO-SAVED!
                 
                 skymap_3d_btn.click(
                     fn=generate_3d_sky_map,
-                    inputs=None,
+                    inputs=high_quality_chk,
                     outputs=skymap_3d_plot
                 )
                 
                 # Helper to reset view and sliders
-                def reset_3d_view():
-                    return generate_3d_centered(100, 45, 30), 100, 45, 30
+                def reset_3d_view(hq):
+                    return generate_3d_centered(100, 45, 30, hq), 100, 45, 30
 
                 center_on_obj_btn.click(
                     fn=reset_3d_view,
-                    inputs=None,
+                    inputs=high_quality_chk,
                     outputs=[skymap_3d_plot, nav_distance, nav_h_angle, nav_v_angle]
                 )
                 
                 update_view_btn.click(
                     fn=generate_3d_centered,
-                    inputs=[nav_distance, nav_h_angle, nav_v_angle],
+                    inputs=[nav_distance, nav_h_angle, nav_v_angle, high_quality_chk],
                     outputs=skymap_3d_plot
                 )
             
@@ -1046,7 +1045,7 @@ When complete, the enriched database will be AUTO-SAVED!
                         const_plot = gr.Plot(label="Region View")
                 
                 # Function for centering on selected object
-                def const_center_on_object(fov, current_ra, current_dec):
+                def const_center_on_object(fov, current_ra, current_dec, high_quality=False):
                     global selected_object
                     if selected_object is None:
                         return None, current_ra, current_dec
@@ -1057,20 +1056,20 @@ When complete, the enriched database will be AUTO-SAVED!
                     dec = obj['dec']
                     
                     # Generate map centered on object
-                    fig = generate_constellation_map(ra, dec, fov)
+                    fig = generate_constellation_map(ra, dec, fov, high_quality)
                     
                     return fig, ra, dec
                 
                 # Wire up button
                 const_center_btn.click(
                     fn=const_center_on_object,
-                    inputs=[const_fov, const_ra, const_dec],
+                    inputs=[const_fov, const_ra, const_dec, high_quality_chk],
                     outputs=[const_plot, const_ra, const_dec]
                 )
                 
                 const_manual_btn.click(
                     fn=generate_constellation_map,
-                    inputs=[const_ra, const_dec, const_fov],
+                    inputs=[const_ra, const_dec, const_fov, high_quality_chk],
                     outputs=const_plot
                 )
     
@@ -1144,6 +1143,7 @@ When complete, the enriched database will be AUTO-SAVED!
                         # Use selected object for plot
                         if selected_object is not None:
                             mass_msun = selected_object.get('mass_msun', 1.0)
+                            if pd.isna(mass_msun): mass_msun = 1.0
                             obj_name = selected_object.get('name', f"ID:{selected_object.get('source_id', 'unknown')}")
                             fig = create_g1_g2_plot(mass_msun=mass_msun, object_name=obj_name)
                         else:
@@ -1247,7 +1247,8 @@ When complete, the enriched database will be AUTO-SAVED!
                 
                 def plot_time_dilation():
                     if selected_object is not None:
-                        mass_msun = selected_object['mass_msun']
+                        mass_msun = selected_object.get('mass_msun', 1.0)
+                        if pd.isna(mass_msun): mass_msun = 1.0
                         obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
                         return create_time_dilation_comparison(mass_msun, obj_name)
                     else:
@@ -1268,7 +1269,8 @@ When complete, the enriched database will be AUTO-SAVED!
                 def plot_radial_stretch():
                     try:
                         if selected_object is not None:
-                            mass_msun = selected_object['mass_msun']
+                            mass_msun = selected_object.get('mass_msun', 1.0)
+                            if pd.isna(mass_msun): mass_msun = 1.0
                             obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
                             distance_pc = selected_object.get('distance', 1000.0)
                             print(f"[DEBUG] Radial Stretch: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
@@ -1302,7 +1304,8 @@ When complete, the enriched database will be AUTO-SAVED!
                     try:
                         from ssz_physics_plots_matplotlib import create_seg_performance_png
                         if selected_object is not None:
-                            mass_msun = selected_object['mass_msun']
+                            mass_msun = selected_object.get('mass_msun', 1.0)
+                            if pd.isna(mass_msun): mass_msun = 1.0
                             obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
                             distance_pc = selected_object.get('distance', 8000.0)
                             print(f"[DEBUG] SEG Performance: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
@@ -1333,7 +1336,8 @@ When complete, the enriched database will be AUTO-SAVED!
                 def plot_combined():
                     try:
                         if selected_object is not None:
-                            mass_msun = selected_object['mass_msun']
+                            mass_msun = selected_object.get('mass_msun', 1.0)
+                            if pd.isna(mass_msun): mass_msun = 1.0
                             obj_name = selected_object.get('name', f"ID:{selected_object['source_id']}")
                             distance_pc = selected_object.get('distance', 1000.0)
                             print(f"[DEBUG] Combined Analysis: {obj_name}, M={mass_msun:.2e}, d={distance_pc:.2f}")
@@ -1388,6 +1392,82 @@ When complete, the enriched database will be AUTO-SAVED!
         - [Complete Roadmap](COMPLETE_ROADMAP.md)
         """)
 
+    
+    # ========================================================================
+    # MEGA UPDATE: Wire Object Selection to ALL Visualizations and Physics
+    # ========================================================================
+    
+    def on_select_update_all(idx, hq, c_fov, c_ra, c_dec, dom_show):
+        """
+        Mega Update Function: When user selects an object, update ALL plots.
+        
+        Inputs:
+        - idx: Selected object index from dropdown
+        - hq: High quality mode checkbox
+        - c_fov, c_ra, c_dec: Constellation view parameters
+        - dom_show: Domains show_objects checkbox
+        
+        Outputs (11 total):
+        - Status text, 2D/3D Sky Maps, Constellation, Physics plots
+        """
+        print(f"[MEGA UPDATE] Selecting object {idx} (HQ={hq})...")
+        
+        # 1. Update Selection
+        status = select_object(idx) if idx is not None else "❌ No object selected"
+        
+        # 2. Update Visualizations
+        fig_2d = generate_sky_map(hq)
+        fig_3d = generate_3d_sky_map(hq)
+        fig_const, new_ra, new_dec = const_center_on_object(c_fov, c_ra, c_dec, hq)
+        
+        # 3. Update Physics Plots
+        fig_domains = plot_domains_with_objects(dom_show)
+        fig_dilation = plot_time_dilation()
+        fig_stretch = plot_radial_stretch()
+        fig_combined = plot_combined()
+        fig_seg = plot_seg_performance()
+        
+        print(f"[MEGA UPDATE] Complete! Updated 11 outputs.")
+        
+        return (
+            status,          # vis_object_status
+            fig_2d,          # skymap_plot
+            fig_3d,          # skymap_3d_plot
+            fig_const,       # const_plot
+            new_ra,          # const_ra
+            new_dec,         # const_dec
+            fig_domains,     # domains_plot
+            fig_dilation,    # dilation_plot
+            fig_stretch,     # stretch_plot
+            fig_combined,    # combined_plot
+            fig_seg          # seg_perf_plot
+        )
+    
+    # Wire up the mega update button
+    vis_select_btn.click(
+        fn=on_select_update_all,
+        inputs=[
+            vis_object_dropdown,
+            high_quality_chk,
+            const_fov,
+            const_ra,
+            const_dec,
+            domains_show_objects
+        ],
+        outputs=[
+            vis_object_status,
+            skymap_plot,
+            skymap_3d_plot,
+            const_plot,
+            const_ra,
+            const_dec,
+            domains_plot,
+            dilation_plot,
+            stretch_plot,
+            combined_plot,
+            seg_perf_plot
+        ]
+    )
     
     gr.Markdown("""
     ---
