@@ -1412,6 +1412,11 @@ When complete, the enriched database will be AUTO-SAVED!
         """
         print(f"[MEGA UPDATE] Selecting object {idx} (HQ={hq})...")
         
+        # 0. Skip if no selection (avoids clearing plots on search)
+        if idx is None:
+            print("[MEGA UPDATE] Skipped (None selection)")
+            return (gr.skip(),) * 11
+        
         # 1. Update Selection
         status = select_object(idx) if idx is not None else "❌ No object selected"
         
@@ -1443,7 +1448,37 @@ When complete, the enriched database will be AUTO-SAVED!
             fig_seg          # seg_perf_plot
         )
     
-    # Wire up the mega update button
+    # ========================================================================
+    # WIRING & EVENTS (The "Alive" UX)
+    # ========================================================================
+    
+    # 1. Auto-Update on Object Selection (Dropdown)
+    vis_object_dropdown.change(
+        fn=on_select_update_all,
+        inputs=[
+            vis_object_dropdown,
+            high_quality_chk,
+            const_fov,
+            const_ra,
+            const_dec,
+            domains_show_objects
+        ],
+        outputs=[
+            vis_object_status,
+            skymap_plot,
+            skymap_3d_plot,
+            const_plot,
+            const_ra,
+            const_dec,
+            domains_plot,
+            dilation_plot,
+            stretch_plot,
+            combined_plot,
+            seg_perf_plot
+        ]
+    )
+    
+    # 2. Manual Button (Backup)
     vis_select_btn.click(
         fn=on_select_update_all,
         inputs=[
@@ -1468,6 +1503,21 @@ When complete, the enriched database will be AUTO-SAVED!
             seg_perf_plot
         ]
     )
+    
+    # 3. Search on Enter
+    vis_search.submit(
+        fn=vis_quick_search,
+        inputs=vis_search,
+        outputs=[vis_object_dropdown, vis_object_status]
+    )
+    
+    # 4. Fluid 3D Navigation (Update on Slider Release)
+    for slider in [nav_distance, nav_h_angle, nav_v_angle]:
+        slider.release(
+            fn=generate_3d_centered,
+            inputs=[nav_distance, nav_h_angle, nav_v_angle, high_quality_chk],
+            outputs=skymap_3d_plot
+        )
     
     gr.Markdown("""
     ---
