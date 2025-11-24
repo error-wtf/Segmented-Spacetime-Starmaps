@@ -178,8 +178,17 @@ def generate_sky_map():
 
 
 def generate_3d_sky_map():
-    """Generate 3D sky map with 50k database."""
+    """Generate 3D sky map with 50k database - COLAB OPTIMIZED."""
     global last_query_data
+    
+    # Detect Colab environment
+    try:
+        import google.colab
+        in_colab = True
+        max_stars = 1000  # MUCH smaller for Colab
+    except:
+        in_colab = False
+        max_stars = 5000  # Reasonable for local
     
     # Use query data if available, otherwise use database
     if last_query_data is not None and not last_query_data.empty:
@@ -187,15 +196,34 @@ def generate_3d_sky_map():
     else:
         data = load_star_database()
     
+    # CRITICAL: Sample data for performance
+    if len(data) > max_stars:
+        import random
+        indices = sorted(random.sample(range(len(data)), max_stars))
+        data_sample = data.iloc[indices].copy()
+        subtitle = f"showing {max_stars:,} of {len(data):,} stars"
+        if in_colab:
+            subtitle += " (Colab optimized)"
+    else:
+        data_sample = data.copy()
+        subtitle = f"{len(data):,} stars"
+    
     return create_3d_sky_map(
-        data,
-        title=f"🌌 3D Sky Map - {len(data):,} Stars<br><sub>GAIA DR3</sub>"
+        data_sample,
+        title=f"🌌 3D Sky Map - {subtitle}<br><sub>GAIA DR3</sub>"
     )
 
 
 def generate_constellation_map(ra, dec, fov):
-    """Generate constellation map for specific region."""
+    """Generate constellation map for specific region - COLAB OPTIMIZED."""
     try:
+        # Detect Colab
+        try:
+            import google.colab
+            max_stars = 2000  # Limit for Colab
+        except:
+            max_stars = 5000  # Limit for local
+        
         db = load_star_database()
         
         # Filter to region
@@ -221,10 +249,20 @@ def generate_constellation_map(ra, dec, fov):
             )
             return fig
         
+        # Sample if too many
+        if len(region_data) > max_stars:
+            import random
+            indices = sorted(random.sample(range(len(region_data)), max_stars))
+            region_sample = region_data.iloc[indices].copy()
+            subtitle = f"{len(region_sample):,} of {len(region_data):,} stars from {len(db):,} database"
+        else:
+            region_sample = region_data.copy()
+            subtitle = f"{len(region_data):,} stars from {len(db):,} database"
+        
         return create_3d_sky_map(
-            region_data,
+            region_sample,
             title=f"Region: RA={ra_val:.1f}°, Dec={dec_val:.1f}° (FOV={fov_val}°)<br>"
-                  f"<sub>{len(region_data)} stars from {len(db):,} database</sub>"
+                  f"<sub>{subtitle}</sub>"
         )
         
     except Exception as e:
@@ -796,18 +834,27 @@ When complete, the enriched database will be AUTO-SAVED!
                         update_view_btn = gr.Button("🔄 Update View", variant="primary")
                 
                 def generate_3d_centered(distance, h_angle, v_angle):
-                    """Generate 3D map centered on selected object - OPTIMIZED."""
+                    """Generate 3D map centered on selected object - COLAB OPTIMIZED."""
+                    # Detect Colab
+                    try:
+                        import google.colab
+                        max_stars = 500  # VERY small for Colab
+                        mode_txt = " (Colab)"
+                    except:
+                        max_stars = 1000  # Small for local
+                        mode_txt = ""
+                    
                     data = load_star_database()
                     
-                    # FAST MODE: Only 1000 stars for quick rendering
-                    if len(data) > 1000:
+                    # FAST MODE: Sample for quick rendering
+                    if len(data) > max_stars:
                         import random
-                        indices = sorted(random.sample(range(len(data)), 1000))
+                        indices = sorted(random.sample(range(len(data)), max_stars))
                         data_sample = data.iloc[indices].copy()
                     else:
                         data_sample = data.copy()
                     
-                    fig = create_3d_sky_map(data_sample, f"🌌 3D Sky Map - {len(data):,} Total ({len(data_sample):,} shown)")
+                    fig = create_3d_sky_map(data_sample, f"🌌 3D Sky Map - {len(data):,} Total ({len(data_sample):,} shown{mode_txt})")
                     
                     if selected_object is not None:
                         try:
