@@ -379,8 +379,10 @@ All dependencies are listed in `requirements.txt` and automatically installed du
 This project is part of the **Segmented Spacetime (SSZ)** theoretical framework developed by **Carmen Wrede** and **Lino Casu**. It explores alternative approaches to general relativity based on discrete spacetime segments and golden ratio (φ) scaling.
 
 For more information, see:
-- SSZ Projection Suite: [GitHub Repository]
-- Papers: [Papers folder in main SSZ repo]
+- SSZ Projection Suite: [GitHub Repository](https://github.com/error-wtf/Segmented-Spacetime-Mass-Projection-Unified-Results)
+- SSZ Metric: [Github Repository](https://github.com/error-wtf/ssz-metric-pure)
+- SSZ All Physics Plots: [Github Repository](https://github.com/error-wtf/ssz-paper-plots)
+- Papers: [Papers folder in main SSZ repo](https://www.researchgate.net/profile/Carmen-Wrede)
 
 ---
 
