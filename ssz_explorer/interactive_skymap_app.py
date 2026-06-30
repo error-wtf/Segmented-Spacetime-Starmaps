@@ -659,7 +659,7 @@ def render_help_view():
                 html.Li('Select: Click on objects for details', style={'color': COLORS['text']})
             ]),
             html.H4('SSZ Physics', style={'color': COLORS['primary'], 'marginTop': '20px'}),
-            html.P('Segment Density: Xi(r) = 1 - exp(-phi * r/r_s)', style={'color': COLORS['text'], 'fontFamily': 'monospace'}),
+            html.P('Segment Density: Xi(r) = 1 - exp(-phi * r_s / r)', style={'color': COLORS['text'], 'fontFamily': 'monospace'}),
             html.P('Time Dilation: D_SSZ(r) = 1/(1 + Xi)', style={'color': COLORS['text'], 'fontFamily': 'monospace'}),
             html.P(f'Golden Ratio: phi = {PHI:.10f}', style={'color': COLORS['text'], 'fontFamily': 'monospace'})
         ], style={'padding': '20px', 'backgroundColor': COLORS['panel'], 'borderRadius': '5px'})

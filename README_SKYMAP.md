@@ -269,7 +269,7 @@ outputs_quick_start/
 
 ```python
 # Radial expansion factor
-Xi(r) = 1 - exp(-φ * r / r_s)
+Xi(r) = 1 - exp(-φ * r_s / r)
 
 # Time dilation
 D_SSZ(r) = 1 / (1 + Xi(r))

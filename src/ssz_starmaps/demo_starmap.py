@@ -6,7 +6,7 @@ SSZ StarMaps - Main Demo Script
 Demonstrates:
 1. Fetching real star catalog data from SIMBAD
 2. Projecting stars onto a 2D plane
-3. Applying ECHTE SSZ metric deformations (Xi(r) = 1 - exp(-phi*r/r_s))
+3. Applying ECHTE SSZ metric deformations (Xi(r) = 1 - exp(-phi*r_s / r))
 4. Computing orbit circumferences with Ramanujan's formula
 5. Visualizing Minkowski vs SSZ star positions
 
@@ -39,7 +39,7 @@ def main():
     print(f"\nPhysical Parameters:")
     print(f"  phi (golden ratio) = {PHI:.6f}")
     print(f"  Mass = {M_sun:.3e} kg (Sun)")
-    print(f"  SSZ Formula: Xi(r) = 1 - exp(-phi*r/r_s)")
+    print(f"  SSZ Formula: Xi(r) = 1 - exp(-phi*r_s / r)")
     
     # Step 1: Fetch star catalog
     print("\n[1/5] Fetching star catalog...")

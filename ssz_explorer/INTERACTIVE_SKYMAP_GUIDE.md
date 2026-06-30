@@ -234,7 +234,7 @@ Max Distance:
 
 ```
 Segment Density:
-  Xi(r) = 1 - exp(-phi * r/r_s)
+  Xi(r) = 1 - exp(-phi * r_s / r)
 
 Time Dilation:
   D_SSZ(r) = 1/(1 + Xi)

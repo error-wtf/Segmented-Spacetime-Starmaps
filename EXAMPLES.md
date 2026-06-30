@@ -108,7 +108,7 @@ ax1.set_title('Minkowski')
 ax1.axis('equal')
 
 ax2.scatter(x_ssz, y_ssz, alpha=0.6, color='red')
-ax2.set_title('SSZ: Xi(r) = 1 - exp(-phi*r/r_s)')
+ax2.set_title('SSZ: Xi(r) = 1 - exp(-phi*r_s / r)')
 ax2.axis('equal')
 
 plt.tight_layout()
@@ -198,7 +198,7 @@ x_fake, y_fake = apply_ssz_deformation(x, y, eps=0.15)
 ```python
 from ssz_starmaps import apply_ssz_metric_deformation
 
-# ECHTE SSZ-Physik: Xi(r) = 1 - exp(-phi*r/r_s)
+# ECHTE SSZ-Physik: Xi(r) = 1 - exp(-phi*r_s / r)
 x_real, y_real = apply_ssz_metric_deformation(
     x, y,
     mass_kg=1.98847e30,  # Physical mass
@@ -212,7 +212,7 @@ x_real, y_real = apply_ssz_metric_deformation(
 
 ```python
 # Segment Saturation
-Xi(r) = 1 - exp(-phi * r/r_s)
+Xi(r) = 1 - exp(-phi * r_s / r)
 
 # Time Dilation
 D_SSZ(r) = 1 / (1 + Xi(r))

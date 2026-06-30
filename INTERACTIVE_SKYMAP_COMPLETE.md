@@ -340,7 +340,7 @@ Interactive! Real-time updates!
 ### **SSZ Physics:**
 ```python
 # Correct formulas implemented:
-Xi(r) = 1 - exp(-φ * r / r_s)
+Xi(r) = 1 - exp(-φ * r_s / r)
 D_SSZ(r) = 1 / (1 + Xi(r))
 stretch_factor = 1 + Xi(r)
 

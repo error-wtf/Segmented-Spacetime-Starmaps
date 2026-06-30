@@ -53,7 +53,7 @@
 - [x] CHATGPT_CORRECTION.md - Clarifies Xi(r) vs phi_G(r)
 
 ### ✅ All docs use correct formulas:
-- [x] Xi(r) = 1 - exp(-PHI * r/r_s)
+- [x] Xi(r) = 1 - exp(-PHI * r_s / r)
 - [x] PHI = (1 + sqrt(5)) / 2 = 1.618034 (Golden Ratio)
 - [x] D_SSZ(r) = 1 / (1 + Xi(r))
 - [x] R_ssz = r * (1 + Xi(r))

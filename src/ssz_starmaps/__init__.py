@@ -9,7 +9,7 @@ metric deformations, using real astronomical catalog data.
 KEINE FAKE-LOGIK! Basiert auf echter SSZ-Physik (Carmen Wrede & Lino Casu).
 
 Kernformeln:
-- Segment Saturation: Xi(r) = 1 - exp(-phi * r/r_s)
+- Segment Saturation: Xi(r) = 1 - exp(-phi * r_s / r)
 - Time Dilation SSZ: D_SSZ(r) = 1 / (1 + Xi(r))
 - SSZ Deformation: R_ssz = r * (1 + Xi(r))
 
@@ -34,7 +34,7 @@ from .projection import (
 
 # SSZ Metric (Xi(r)-ANSATZ ONLY!)
 from .ssz_metric import (
-    Xi,  # Segment saturation: 1 - exp(-phi*r/r_s)
+    Xi,  # Segment saturation: 1 - exp(-phi*r_s / r)
     radial_stretch,  # Stretch factor: 1 + Xi(r)
     D_SSZ,  # SSZ time dilation: 1 / (1 + Xi)
     D_GR,  # GR time dilation: sqrt(1 - r_s/r)

@@ -59,7 +59,7 @@ def validate_ssz_observation(row: pd.Series, tolerance: float = 0.1) -> dict:
         r_s = 2 * G * M_kg / (c**2)  # Schwarzschild radius
         
         # SSZ stretch factor Xi
-        Xi = 1 - np.exp(-phi * r / r_s)
+        Xi = 1 - np.exp(-phi * r_s / r)
         
         # SSZ velocity prediction
         # v_SSZ = sqrt(GM/r) * sqrt(1 + Xi)

@@ -329,7 +329,7 @@ class SSZOnlyVisualizer:
         R = np.sqrt(X**2 + Y**2)
         
         # SSZ segment density
-        Xi = np.where(R > 0, 1 - np.exp(-PHI * R / r_s), 0)
+        Xi = np.where(R > 0, 1 - np.exp(-PHI * r_s / r), 0)
         
         # Create surface plot
         fig = go.Figure(data=[

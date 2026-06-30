@@ -412,7 +412,7 @@ Remaining: Sprint 4 (galaxies) + polish
 ### **SSZ Physics Implementation:**
 ```python
 # Segment saturation
-Xi(r) = 1 - exp(-φ * r / r_s)
+Xi(r) = 1 - exp(-φ * r_s / r)
 
 # SSZ period correction
 T_SSZ = T_GR * (1 + α * Xi(a))

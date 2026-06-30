@@ -45,7 +45,7 @@ def ssz_segment_saturation(r: float, r_s: float) -> float:
     """
     Calculate SSZ segment saturation function.
     
-    Xi(r) = 1 - exp(-phi * r / r_s)
+    Xi(r) = 1 - exp(-phi * r_s / r)
     
     Parameters:
     -----------
@@ -59,7 +59,7 @@ def ssz_segment_saturation(r: float, r_s: float) -> float:
     float
         Segment saturation (dimensionless)
     """
-    return 1.0 - np.exp(-phi * r / r_s)
+    return 1.0 - np.exp(-phi * r_s / r)
 
 
 def gr_orbital_period(a: float, M: float) -> float:

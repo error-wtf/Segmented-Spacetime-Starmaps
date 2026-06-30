@@ -54,7 +54,7 @@ Segmented-Spacetime-StarMaps/
 PHI = (1 + sqrt(5)) / 2  # Golden Ratio = 1.618034
 
 Xi(r, r_s) -> float:
-    """Segment saturation: 1 - exp(-PHI * r/r_s)"""
+    """Segment saturation: 1 - exp(-PHI * r_s / r)"""
     
 D_SSZ(r, r_s) -> float:
     """Time dilation: 1 / (1 + Xi(r))"""

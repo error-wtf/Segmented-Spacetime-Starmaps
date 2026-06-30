@@ -147,7 +147,7 @@ SSZ Stretch:     2.000000x (exact)
 Time Dilation:   0.500000 (exact)
 Coordinates:     Galactic (Astropy)
 Validation:      Mass-Projection repo
-Formula:         Xi(r) = 1 - exp(-φr/r_s)
+Formula:         Xi(r) = 1 - exp(-φr_s / r)
 Golden Ratio:    φ = 1.618034
 ```
 

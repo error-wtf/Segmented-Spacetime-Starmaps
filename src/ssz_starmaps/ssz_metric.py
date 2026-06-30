@@ -55,7 +55,7 @@ def Xi(r: Union[float, np.ndarray], r_s: float) -> Union[float, np.ndarray]:
     **ECHTE SSZ-FORMEL aus ssz-metric-pure!**
     
     Formula:
-        Xi(r) = 1 - exp(-phi * r/r_s)
+        Xi(r) = 1 - exp(-phi * r_s / r)
     
     where phi = (1 + sqrt(5))/2 approx 1.618 is the golden ratio.
     
@@ -94,7 +94,7 @@ def Xi(r: Union[float, np.ndarray], r_s: float) -> Union[float, np.ndarray]:
     r = np.asarray(r)
     
     # ECHTE SSZ-FORMEL!
-    xi_value = 1.0 - np.exp(-PHI * r / r_s)
+    xi_value = 1.0 - np.exp(-PHI * r_s / r)
     
     return float(xi_value) if xi_value.ndim == 0 else xi_value
 
@@ -297,6 +297,6 @@ if __name__ == "__main__":
     
     print("\n" + "=" * 70)
     print("[OK] ECHTE SSZ-Logik functional!")
-    print("Formula: Xi(r) = 1 - exp(-phi*r/r_s)")
+    print("Formula: Xi(r) = 1 - exp(-phi*r_s / r)")
     print(f"phi = {PHI:.6f}")
     print("=" * 70)

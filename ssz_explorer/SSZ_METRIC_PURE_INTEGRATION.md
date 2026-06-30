@@ -114,7 +114,7 @@ def A_SSZ(r, M):
 # If ssz-metric-pure not available, use local fallback:
 if not SSZ_PURE_AVAILABLE:
     def Xi(r, r_s):
-        return 1.0 - np.exp(-PHI * r / r_s)
+        return 1.0 - np.exp(-PHI * r_s / r)
     
     def D_SSZ(r, r_s):
         xi = Xi(r, r_s)

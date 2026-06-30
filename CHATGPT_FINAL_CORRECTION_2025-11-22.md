@@ -112,7 +112,7 @@ Es gibt **zwei verschiedene SSZ-Ansätze** in der Literatur:
 ### Ansatz A: Xi(r) - Exponential (UNSER ANSATZ)
 
 ```python
-Xi(r) = 1 - exp(-phi * r/r_s)
+Xi(r) = 1 - exp(-phi * r_s / r)
 D_SSZ(r) = 1 / (1 + Xi(r))
 
 Eigenschaften:
@@ -206,7 +206,7 @@ def Xi(r, r_s):
     - run_ssz_theory_validation.py line 49-53
     - verify_theory_scientific.py line 26-28
     """
-    return 1.0 - np.exp(-PHI * r / r_s)
+    return 1.0 - np.exp(-PHI * r_s / r)
 
 def D_SSZ(r, r_s):
     """SSZ time dilation factor (VALIDATED).
@@ -362,7 +362,7 @@ All validated values MATCH exactly (< 1e-10 error)!
 
 1. ✅ **Nutze die Xi(r) Exponential-Formel:**
    ```python
-   Xi = 1 - exp(-phi * r/r_s)
+   Xi = 1 - exp(-phi * r_s / r)
    D = 1 / (1 + Xi)
    ```
 
@@ -432,7 +432,7 @@ Die korrekte Formel D = 1/(1+Xi):
 
 ```python
 # Das ist alles was du brauchst:
-Xi = 1 - exp(-phi * r/r_s)
+Xi = 1 - exp(-phi * r_s / r)
 D = 1 / (1 + Xi)
 
 # NICHT:
@@ -531,7 +531,7 @@ Beim nächsten Mal:
 Die SSZ-Theorie ist elegant und einfach:
 
 ```python
-Xi = 1 - exp(-phi * r/r_s)
+Xi = 1 - exp(-phi * r_s / r)
 D = 1 / (1 + Xi)
 ```
 

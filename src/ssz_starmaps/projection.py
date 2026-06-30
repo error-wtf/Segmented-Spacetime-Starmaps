@@ -86,7 +86,7 @@ def apply_ssz_deformation(
     .. deprecated:: 0.2.0
         **LEGACY FUNCTION! KEINE ECHTE SSZ-PHYSIK!**
         Use :func:`apply_ssz_metric_deformation` instead for ECHTE SSZ-Logik
-        basierend auf Xi(r) = 1 - exp(-phi*r/r_s).
+        basierend auf Xi(r) = 1 - exp(-phi*r_s / r).
         
         This function uses ARBITRARY eps-scaling, NOT the real SSZ metric!
     
@@ -133,7 +133,7 @@ def apply_ssz_deformation(
     warnings.warn(
         "apply_ssz_deformation() is LEGACY and uses FAKE eps-scaling! "
         "Use apply_ssz_metric_deformation() for ECHTE SSZ-Physik "
-        "based on Xi(r) = 1 - exp(-phi*r/r_s).",
+        "based on Xi(r) = 1 - exp(-phi*r_s / r).",
         DeprecationWarning,
         stacklevel=2
     )
@@ -304,7 +304,7 @@ if __name__ == "__main__":
     # Test 4: ECHTE SSZ Metric Deformation
     if SSZ_METRIC_AVAILABLE:
         print("\nTest 4: ECHTE SSZ Metric Deformation")
-        print("  (Xi(r) = 1 - exp(-phi*r/r_s), R_ssz = r*(1+Xi))")
+        print("  (Xi(r) = 1 - exp(-phi*r_s / r), R_ssz = r*(1+Xi))")
         
         # Test grid around Sun
         x_test = np.array([0.0, 1.0, 2.0, 3.0])
@@ -332,7 +332,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 70)
     if SSZ_METRIC_AVAILABLE:
         print("[OK] ECHTE SSZ metric integration functional!")
-        print("Formula: Xi(r) = 1 - exp(-phi*r/r_s)")
+        print("Formula: Xi(r) = 1 - exp(-phi*r_s / r)")
     else:
         print("NOTE: Using placeholder implementation.")
         print("Install ssz_metric.py for ECHTE SSZ-Logik.")

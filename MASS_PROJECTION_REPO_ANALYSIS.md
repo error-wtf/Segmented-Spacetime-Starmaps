@@ -18,7 +18,7 @@
 ## Core Formula (Universal)
 
 ```python
-Xi(r) = Xi_max * (1 - exp(-phi * r / r_s))
+Xi(r) = Xi_max * (1 - exp(-phi * r_s / r))
 
 Where:
   phi = (1 + sqrt(5)) / 2 = 1.618034... (Golden Ratio)
@@ -44,10 +44,10 @@ D_SSZ = phi^(-alpha*Xi)  # WRONG! Never used!
 
 | Script | Formula | Xi_max | Status |
 |--------|---------|--------|--------|
-| `run_ssz_validation.py` | `Xi_max * (1 - exp(-PHI*r/r_s))` | 1.0 | ✅ CORRECT |
-| `run_ssz_theory_validation.py` | `xi_max * (1 - exp(-PHI*r/r_s))` | 1.0 | ✅ CORRECT |
+| `run_ssz_validation.py` | `Xi_max * (1 - exp(-PHI*r_s / r))` | 1.0 | ✅ CORRECT |
+| `run_ssz_theory_validation.py` | `xi_max * (1 - exp(-PHI*r_s / r))` | 1.0 | ✅ CORRECT |
 | `run_ssz_unified_validation.py` | `xi_max * (1 - exp(-phi*r/rs))` | 1.0 | ✅ CORRECT |
-| `verify_theory_scientific.py` | `xi_max * (1 - exp(-phi*r/r_s))` | 1.0 | ✅ CORRECT |
+| `verify_theory_scientific.py` | `xi_max * (1 - exp(-phi*r_s / r))` | 1.0 | ✅ CORRECT |
 | `gr_ssz_intersection_failsafe.py` | `Xi_max * (1 - exp(-phi*r/rs))` | 1.0 | ✅ CORRECT |
 
 **Result:** 5/5 main scripts use IDENTICAL formula!
@@ -149,16 +149,16 @@ D_SSZ(r_s) = 0.555028 (finite!)
 
 | Implementation | Formula | Xi_max | phi_G? | Status |
 |----------------|---------|--------|--------|--------|
-| **Mass-Projection** | `1 - exp(-PHI*r/r_s)` | 1.0 | ❌ NO | ✅ VALIDATED (161 tests) |
-| **StarMaps** | `1 - exp(-PHI*r/r_s)` | 1.0 | ❌ NO | ✅ MATCHES EXACTLY |
-| **ssz-metric-pure (Xi)** | `1 - exp(-PHI*r/r_s)` | 1.0 | ❌ NO | ✅ SOURCE |
+| **Mass-Projection** | `1 - exp(-PHI*r_s / r)` | 1.0 | ❌ NO | ✅ VALIDATED (161 tests) |
+| **StarMaps** | `1 - exp(-PHI*r_s / r)` | 1.0 | ❌ NO | ✅ MATCHES EXACTLY |
+| **ssz-metric-pure (Xi)** | `1 - exp(-PHI*r_s / r)` | 1.0 | ❌ NO | ✅ SOURCE |
 | **ssz-metric-pure (phi_G)** | Uses gamma, phi_G(r) | N/A | ✅ YES | 🔄 ALTERNATIVE |
 
 ---
 
 ## Physical Interpretation
 
-### Why Xi(r) = 1 - exp(-phi*r/r_s)?
+### Why Xi(r) = 1 - exp(-phi*r_s / r)?
 
 1. **Golden Ratio (phi):** Fundamental geometric constant
 2. **Exponential Saturation:** Smooth approach to Xi_max
@@ -192,7 +192,7 @@ def Xi(r, r_s):
     Formula: Ξ(r) = 1 - exp(-φ · r/r_s)
     where φ = (1 + √5)/2 ≈ 1.618
     """
-    return 1.0 - np.exp(-PHI * r / r_s)
+    return 1.0 - np.exp(-PHI * r_s / r)
 
 def D_SSZ(r, r_s):
     """SSZ time dilation factor.
@@ -245,7 +245,7 @@ Xi = 0.99 * (1 - exp(-PHI * (r + 0.001)))  # Numerical stabilization
 5. `test_c2_segments_strict.py` - C2 strictness
 6. `run_full_suite.py` - Complete pipeline
 
-**All use Xi(r) = 1 - exp(-phi*r/r_s)**
+**All use Xi(r) = 1 - exp(-phi*r_s / r)**
 
 ---
 
@@ -255,7 +255,7 @@ Xi = 0.99 * (1 - exp(-PHI * (r + 0.001)))  # Numerical stabilization
 
 | Test | StarMaps | Mass-Projection | Match? |
 |------|----------|-----------------|--------|
-| Formula | `1 - exp(-PHI*r/r_s)` | `1 - exp(-PHI*r/r_s)` | ✅ YES |
+| Formula | `1 - exp(-PHI*r_s / r)` | `1 - exp(-PHI*r_s / r)` | ✅ YES |
 | r*/r_s | 1.386549 | 1.386562 | ✅ YES (0.001%) |
 | D(r_s) | 0.555028 | 0.555028 | ✅ YES |
 | PPN beta | 1.0 | 1.0 | ✅ YES |
@@ -330,7 +330,7 @@ Based on current TODO list:
 
 **Standard Implementation (r > 0.01 r_s):**
 ```python
-Xi = 1.0 - np.exp(-PHI * r / r_s)  # Fine for most cases
+Xi = 1.0 - np.exp(-PHI * r_s / r)  # Fine for most cases
 ```
 
 **Near-Horizon (r < 0.01 r_s, optional):**

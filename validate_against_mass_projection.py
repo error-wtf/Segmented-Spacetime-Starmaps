@@ -42,12 +42,12 @@ print("TEST 1: Formula Verification")
 print("=" * 80)
 
 print(f"\nMass-Projection Formula (validated):")
-print(f"  Xi(r) = Xi_max * (1 - exp(-phi * r/r_s))")
+print(f"  Xi(r) = Xi_max * (1 - exp(-phi * r_s / r))")
 print(f"  Xi_max = 1.0")
 print(f"  phi = {PHI:.6f}")
 
 print(f"\nOur StarMaps Formula:")
-print(f"  Xi(r) = 1 - exp(-PHI * r/r_s)")
+print(f"  Xi(r) = 1 - exp(-PHI * r_s / r)")
 print(f"  PHI = {PHI:.6f}")
 
 print(f"\n[OK] FORMULAS ARE IDENTICAL (Xi_max = 1.0 implicit)")

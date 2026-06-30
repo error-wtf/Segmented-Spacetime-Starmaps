@@ -306,7 +306,7 @@ class SystemRenderer:
         r_s = 2 * G * M_kg / (c**2)
         
         R = np.sqrt(X**2 + Y**2) * AU  # Convert to meters
-        Xi = np.where(R > 0, 1 - np.exp(-PHI * R / r_s), 0)
+        Xi = np.where(R > 0, 1 - np.exp(-PHI * r_s / r), 0)
         
         # Contour plot
         fig.add_trace(

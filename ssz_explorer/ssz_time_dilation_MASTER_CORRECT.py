@@ -24,13 +24,13 @@ XI_MAX = 1.0
 
 def Xi(r, r_s, xi_max=XI_MAX):
     """CORRECT Xi formula from PAPER:
-    Xi(r) = xi_max * (1 - exp(-PHI * r / r_s))
+    Xi(r) = xi_max * (1 - exp(-PHI * r_s / r))
     
     NO r_c parameter!
     NO quadratic exponent!
     PHI (golden ratio) in exponent!
     """
-    return xi_max * (1 - np.exp(-PHI * r / r_s))
+    return xi_max * (1 - np.exp(-PHI * r_s / r))
 
 def D_SSZ(r, r_s, xi_max=XI_MAX):
     """SSZ Time Dilation Factor:
@@ -55,7 +55,7 @@ def create_time_dilation_comparison(mass_msun=4.3e6, object_name="Sgr A*"):
     - D_SSZ(r) = 1 / (1 + Xi(r))  [Singularity-free, constant ~0.5]
     - D_GR(r) = √(1 - r_s/r)      [Singular at r_s, rises 0→1]
     
-    where Xi(r) = xi_max * (1 - exp(-PHI * r / r_s))
+    where Xi(r) = xi_max * (1 - exp(-PHI * r_s / r))
     
     Universal crossover at r* ≈ 1.387 r_s, D* ≈ 0.528
     """

@@ -24,7 +24,7 @@ except ImportError:
         return 2.0 * G * mass / (c * c)
     
     def Xi(r, r_s):
-        return 1.0 - np.exp(-PHI * r / r_s)
+        return 1.0 - np.exp(-PHI * r_s / r)
     
     def D_SSZ(r, r_s):
         xi = Xi(r, r_s)

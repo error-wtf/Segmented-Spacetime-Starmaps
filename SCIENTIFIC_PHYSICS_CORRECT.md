@@ -10,7 +10,7 @@
 ### **Alte (falsche) Formeln:**
 ```python
 # FALSCH:
-Xi(r) = 1 - exp(-PHI * r / r_s)  # ❌ Zu simpel!
+Xi(r) = 1 - exp(-PHI * r_s / r)  # ❌ Zu simpel!
 D_SSZ(r) = 1 / (1 + Xi)           # ❌ Ohne γ(r)!
 ```
 

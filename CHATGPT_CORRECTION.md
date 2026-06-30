@@ -97,7 +97,7 @@ Im aktuellen StarMap-Code nutzen wir **bewusst den Xi(r)-Ansatz**, weil er:
 PHI = (1.0 + np.sqrt(5.0)) / 2.0  # Golden Ratio
 
 def Xi(r, r_s):
-    return 1.0 - np.exp(-PHI * r / r_s)
+    return 1.0 - np.exp(-PHI * r_s / r)
 
 def radial_stretch(r, r_s):
     xi = Xi(r, r_s)

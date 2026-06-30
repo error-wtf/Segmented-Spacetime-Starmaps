@@ -4,7 +4,7 @@
 SSZ vs Minkowski - Quantitative Comparison Test
 
 Vergleicht die ECHTE SSZ-Deformation mit Minkowski-Geometrie.
-Zeigt dass SSZ tatsächlich auf Xi(r) = 1 - exp(-phi*r/r_s) basiert!
+Zeigt dass SSZ tatsächlich auf Xi(r) = 1 - exp(-phi*r_s / r) basiert!
 
 © 2025 Carmen Wrede, Lino Casu
 Licensed under the Anti-Capitalist Software License v1.4
@@ -162,7 +162,7 @@ print("SUMMARY: SSZ vs MINKOWSKI")
 print("=" * 80)
 
 print(f"\n1. ECHTE SSZ-FORMEL:")
-print(f"   Xi(r) = 1 - exp(-phi*r/r_s)")
+print(f"   Xi(r) = 1 - exp(-phi*r_s / r)")
 print(f"   phi = {PHI:.6f}")
 
 print(f"\n2. KEINE SINGULARITAET:")
@@ -181,5 +181,5 @@ print(f"   Meaning: Doppelte Weglaenge bei vollstaendiger Segmentierung!")
 
 print("\n" + "=" * 80)
 print("[OK] ECHTE SSZ-Physik validiert!")
-print("Formula: Xi(r) = 1 - exp(-phi*r/r_s)")
+print("Formula: Xi(r) = 1 - exp(-phi*r_s / r)")
 print("=" * 80 + "\n")
