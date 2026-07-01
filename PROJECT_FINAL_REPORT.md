@@ -140,7 +140,7 @@ Result: 100% VALIDATED
 - [x] Batch queries
 
 ### SSZ Physics:
-- [x] Xi(r) = 1 - exp(-φ·r/r_s) implementation
+- [x] Xi(r) = 1 - exp(-φ·r_s / r) implementation
 - [x] D_SSZ(r) = 1/(1+Xi(r)) time dilation
 - [x] Radial stretch = 1 + Xi(r)
 - [x] Schwarzschild radius calculation

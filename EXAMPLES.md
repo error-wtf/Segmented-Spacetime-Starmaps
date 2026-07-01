@@ -1,6 +1,6 @@
 # SSZ StarMaps - Examples
 
-**ECHTE SSZ-Physik Beispiele** basierend auf Xi(r) = 1 - exp(-φ·r/r_s)
+**ECHTE SSZ-Physik Beispiele** basierend auf Xi(r) = 1 - exp(-φ·r_s / r)
 
 © 2025 Carmen Wrede, Lino Casu
 

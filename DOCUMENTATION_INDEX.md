@@ -132,7 +132,7 @@ Segmented-Spacetime-StarMaps/
 ### 🎯 What This Project Uses:
 - **Approach:** Xi(r) - Segment Saturation
 - **φ Meaning:** Golden Ratio (1.618034)
-- **Formula:** Xi(r) = 1 - exp(-φ·r/r_s)
+- **Formula:** Xi(r) = 1 - exp(-φ·r_s / r)
 - **Source:** `ssz-metric-pure/src/ssz_core/segment_density.py`
 
 ### ⚠️ What This Project Does NOT Use:

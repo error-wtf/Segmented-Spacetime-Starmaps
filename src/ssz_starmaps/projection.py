@@ -5,7 +5,7 @@ Sky projection and SSZ metric deformations.
 
 This module handles:
 - Gnomonic projection (RA/Dec → x,y)
-- SSZ deformation using Xi(r) = 1 - exp(-φ·r/r_s)
+- SSZ deformation using Xi(r) = 1 - exp(-φ·r_s / r)
 
 KEINE phi_G, KEINE gamma, KEINE Integration!
 
@@ -213,7 +213,7 @@ def apply_ssz_metric_deformation(
     Apply SSZ deformation using Xi(r)-approach.
     
     Formula:
-        Xi(r) = 1 - exp(-φ · r/r_s), φ = Golden Ratio
+        Xi(r) = 1 - exp(-φ · r_s / r), φ = Golden Ratio
         R_SSZ(r) = r · (1 + Xi(r))
     
     NO integration, NO gamma, NO phi_G - Pure Xi(r) stretch!

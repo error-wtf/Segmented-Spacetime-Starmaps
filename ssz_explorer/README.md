@@ -142,7 +142,7 @@ python interactive_skymap_app.py
 
 ### **Key Formulas:**
 ```
-Segment Density:    Ξ(r) = 1 - exp(-φ · r/r_s)
+Segment Density:    Ξ(r) = 1 - exp(-φ · r_s / r)
 Time Dilation:      D_SSZ(r) = 1/(1 + Ξ)
 Schwarzschild:      r_s = 2GM/c²
 Golden Ratio:       φ = (1+√5)/2 ≈ 1.618

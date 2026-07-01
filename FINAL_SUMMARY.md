@@ -129,7 +129,7 @@ plot_sky_comparison(stars_ssz, output='comparison.png')
 - ✅ Batch queries
 
 ### SSZ Physics (Validated!):
-- ✅ Xi(r) = 1 - exp(-φ·r/r_s) - Exponential formula
+- ✅ Xi(r) = 1 - exp(-φ·r_s / r) - Exponential formula
 - ✅ D_SSZ(r) = 1/(1+Xi(r)) - Time dilation
 - ✅ Radial stretch = 1 + Xi(r)
 - ✅ Validated against 161 tests (100% pass)

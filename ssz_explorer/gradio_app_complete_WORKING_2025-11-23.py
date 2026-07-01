@@ -1050,7 +1050,7 @@ When complete, the enriched database will be AUTO-SAVED!
         
         **SSZ Physics:**
         - Golden ratio (φ) = 1.618...
-        - Segment Density: Ξ(r) = 1 - exp(-φ·r/r_s)
+        - Segment Density: Ξ(r) = 1 - exp(-φ·r_s / r)
         - Time Dilation: D_SSZ = 1/(1 + Ξ)
         
         **Database Location:**

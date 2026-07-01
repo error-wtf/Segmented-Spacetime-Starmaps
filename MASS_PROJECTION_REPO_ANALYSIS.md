@@ -189,7 +189,7 @@ The phi_G approach (from ssz-metric-pure):
 def Xi(r, r_s):
     """Segment saturation factor using Golden Ratio.
     
-    Formula: Ξ(r) = 1 - exp(-φ · r/r_s)
+    Formula: Ξ(r) = 1 - exp(-φ · r_s / r)
     where φ = (1 + √5)/2 ≈ 1.618
     """
     return 1.0 - np.exp(-PHI * r_s / r)

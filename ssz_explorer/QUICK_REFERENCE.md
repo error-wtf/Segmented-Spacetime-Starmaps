@@ -147,7 +147,7 @@ Level 5: CUSTOM
 ### **Core Equations:**
 ```
 Segment Density:
-  Ξ(r) = 1 - exp(-φ · r/r_s)
+  Ξ(r) = 1 - exp(-φ · r_s / r)
   
 Time Dilation:
   D_SSZ(r) = 1/(1 + Ξ)

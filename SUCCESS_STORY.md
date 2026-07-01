@@ -167,7 +167,7 @@ outputs_quick_start/
 - ✅ Batch queries
 
 ### SSZ Physics (Validated!):
-- ✅ Xi(r) = 1 - exp(-φ·r/r_s)
+- ✅ Xi(r) = 1 - exp(-φ·r_s / r)
 - ✅ D_SSZ(r) = 1/(1+Xi(r))
 - ✅ Radial stretch = 1 + Xi(r)
 - ✅ 161 validation tests (100% pass)

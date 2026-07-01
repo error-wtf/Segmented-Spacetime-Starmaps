@@ -35,7 +35,7 @@ This project demonstrates how **Segmented Spacetime (SSZ)** creates radial defor
 
 ### ✨ Key Features (v1.0.0)
 
-- ✅ **ECHTE SSZ-Physik**: Xi(r) = 1 - exp(-φ·r/r_s)
+- ✅ **ECHTE SSZ-Physik**: Xi(r) = 1 - exp(-φ·r_s / r)
 - ✅ **7 Astronomical Catalogs**: GAIA DR3, SIMBAD, 2MASS, WISE, Exoplanets, NED, SDSS
 - ✅ **3.2 Billion+ Objects**: Stars, galaxies, exoplanets all accessible!
 - ✅ **Exoplanet Integration**: NASA Exoplanet Archive (5,500+ planets) 🪐
@@ -57,7 +57,7 @@ This project demonstrates how **Segmented Spacetime (SSZ)** creates radial defor
 
 **Segment Saturation** (fundamental!):
 ```
-Ξ(r) = 1 - exp(-φ · r/r_s)
+Ξ(r) = 1 - exp(-φ · r_s / r)
 ```
 
 **Time Dilation** (singularity-free!):
@@ -115,7 +115,7 @@ For ChatGPT users: See `CHATGPT_CORRECTION.md` for common misconceptions.
 
 ### Physical Validations:
 
-- ✅ **Formula Match:** Our Xi(r) = 1 - exp(-φ·r/r_s) matches all 13 main validation scripts
+- ✅ **Formula Match:** Our Xi(r) = 1 - exp(-φ·r_s / r) matches all 13 main validation scripts
 - ✅ **PPN Compatible:** β = γ = 1 confirms match with GR in weak-field limit
 - ✅ **Universal Intersection:** r*/r_s = 1.387 is mass-independent (validated!)
 - ✅ **Singularity-Free:** D_SSZ remains finite at Schwarzschild radius (GR diverges)

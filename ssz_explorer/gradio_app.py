@@ -293,7 +293,7 @@ with gr.Blocks(title="SSZ Explorer", theme=gr.themes.Soft()) as app:
         
         gr.Markdown("""
         **SSZ Formulas:**
-        - Segment Density: Ξ(r) = 1 - exp(-φ·r/r_s)
+        - Segment Density: Ξ(r) = 1 - exp(-φ·r_s / r)
         - Time Dilation: D_SSZ = 1/(1 + Ξ)
         - Golden Ratio: φ = 1.618...
         """)

@@ -99,7 +99,7 @@ Focus entirely on **SSZ physics** without GR distraction
 
 **Panel A: Segment Density Ξ(r)**
 ```
-Formula: Ξ(r) = 1 - exp(-φ · r/r_s)
+Formula: Ξ(r) = 1 - exp(-φ · r_s / r)
 Color: Blue
 Fill: To zero
 Shows: How spacetime "segments"
@@ -222,7 +222,7 @@ ssz_only_parameter_space.html
 
 ```
 Segment Density:
-  Ξ(r) = 1 - exp(-φ · r/r_s)
+  Ξ(r) = 1 - exp(-φ · r_s / r)
   
   where:
     φ = (1+√5)/2 ≈ 1.618 (Golden Ratio)

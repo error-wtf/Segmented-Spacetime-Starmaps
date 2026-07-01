@@ -79,7 +79,7 @@ SSZ is an alternative theory of gravity featuring:
 
 **Key Formulas:**
 ```
-Segment Density:  Ξ(r) = 1 - exp(-φ · r/r_s)
+Segment Density:  Ξ(r) = 1 - exp(-φ · r_s / r)
 Time Dilation:    D_SSZ = 1/(1 + Ξ)
 Golden Ratio:     φ = (1+√5)/2 ≈ 1.618
 ```

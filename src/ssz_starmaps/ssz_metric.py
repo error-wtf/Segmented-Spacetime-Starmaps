@@ -6,7 +6,7 @@ SSZ Metric - Xi(r) Segment Saturation (PURE)
 Quelle: ssz-metric-pure/src/ssz_core/segment_density.py
 
 Kernformeln:
-    Xi(r) = 1 - exp(-φ · r/r_s)
+    Xi(r) = 1 - exp(-φ · r_s / r)
     φ = (1+√5)/2 = 1.618034  # GOLDEN RATIO
     
     D_SSZ(r) = 1 / (1 + Xi(r))  # Time dilation

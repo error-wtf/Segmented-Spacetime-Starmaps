@@ -16,7 +16,7 @@ Hi ChatGPT, ich muss deinen letzten Vorschlag zur SSZ-Metrik korrigieren – du 
 
 **Definition:**
 ```
-Ξ(r) = 1 - exp(-φ · r/r_s)
+Ξ(r) = 1 - exp(-φ · r_s / r)
 φ = (1 + √5)/2 ≈ 1.618
 ```
 
@@ -141,7 +141,7 @@ Das ist **physikalisch legitim**, aber:
 ## 6. Fazit / Bitte für zukünftige Vorschläge
 
 Für den StarMap-Code **bleiben wir beim Xi(r)-Ansatz**:
-- Ξ(r) = 1 - exp(-φ·r/r_s) mit φ = Golden Ratio
+- Ξ(r) = 1 - exp(-φ·r_s / r) mit φ = Golden Ratio
 - Radiale Deformation: R_SSZ(r) = r·[1 + Ξ(r)]
 
 Wenn du einen Vorschlag auf Basis von φ_G(r) machen möchtest, ist das okay – aber dann:

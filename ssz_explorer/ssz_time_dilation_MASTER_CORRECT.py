@@ -130,7 +130,7 @@ def create_time_dilation_comparison(mass_msun=4.3e6, object_name="Sgr A*"):
     fig.update_layout(
         title=dict(
             text=f"<b>GR vs SSZ Time Dilation - Universal Crossover</b><br>" +
-                 f"<sub>{object_name} | M = {mass_msun:.2e} M☉ | Xi(r) = (1-exp(-φ·r/r_s)) | φ={PHI:.3f}</sub>",
+                 f"<sub>{object_name} | M = {mass_msun:.2e} M☉ | Xi(r) = (1-exp(-φ·r_s / r)) | φ={PHI:.3f}</sub>",
             x=0.5, xanchor='center'
         ),
         xaxis=dict(

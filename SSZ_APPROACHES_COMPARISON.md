@@ -23,7 +23,7 @@ The `ssz-metric-pure` repository contains **TWO different SSZ formulations**:
 
 ### Formula:
 ```python
-Xi(r) = 1 - exp(-φ · r/r_s)
+Xi(r) = 1 - exp(-φ · r_s / r)
 
 where:
 φ = (1 + √5) / 2 = 1.618034  # GOLDEN RATIO!
@@ -126,7 +126,7 @@ def proper_radius(r, n_steps=512):
 |--------|----------------|-------------------|
 | **Core Variable** | Segment saturation Xi(r) | Rotation angle phi_G(r) |
 | **φ Meaning** | Golden Ratio (1.618) | Calibration parameter |
-| **Formula** | `Xi = 1 - exp(-φ·r/r_s)` | `φ²_G = 2U(1 + U/3)` |
+| **Formula** | `Xi = 1 - exp(-φ·r_s / r)` | `φ²_G = 2U(1 + U/3)` |
 | **Time Dilation** | `1 / (1 + Xi)` | `1 / gamma²` |
 | **Physical Picture** | Filling of segments | Rotation in subspace |
 | **Crossover** | Universal at 1.387*r_s | Depends on calibration |

@@ -157,7 +157,7 @@ annotation_text=f"r_c/r_s = {r_break:.2f}"
 
 **Direkt aus ssz-metric-pure:**
 ```python
-Ξ(r) = 1 - exp(-φ · r/r_s)
+Ξ(r) = 1 - exp(-φ · r_s / r)
 D_SSZ(r) = 1 / (1 + Ξ(r))
 ```
 

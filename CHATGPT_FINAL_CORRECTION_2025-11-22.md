@@ -197,7 +197,7 @@ def schwarzschild_radius(M):
 def Xi(r, r_s):
     """Segment saturation factor (VALIDATED).
     
-    Formula: Ξ(r) = 1 - exp(-φ · r/r_s)
+    Formula: Ξ(r) = 1 - exp(-φ · r_s / r)
     
     where φ = (1 + √5)/2 ≈ 1.618034 (golden ratio)
     

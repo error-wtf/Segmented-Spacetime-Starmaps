@@ -76,7 +76,7 @@ with open('galaxy_1000stars_ssz.json', 'r') as f:
 
 | Column | Unit | Description |
 |--------|------|-------------|
-| `Xi_segment_density` | - | Segment density Ξ(r) = 1 - exp(-φ·r/r_s) |
+| `Xi_segment_density` | - | Segment density Ξ(r) = 1 - exp(-φ·r_s / r) |
 | `D_ssz_time_dilation` | - | SSZ time dilation D_SSZ(r) = 1/(1+Ξ) |
 | `D_gr_time_dilation` | - | GR time dilation D_GR(r) = √(1-r_s/r) |
 | `stretch_factor` | - | Radial stretch (1 + Ξ) |
@@ -85,7 +85,7 @@ with open('galaxy_1000stars_ssz.json', 'r') as f:
 
 **Key Formula:**
 ```
-Ξ(r) = 1 - exp(-φ · r/r_s)
+Ξ(r) = 1 - exp(-φ · r_s / r)
 where φ = (1+√5)/2 ≈ 1.618 (golden ratio)
 ```
 
@@ -218,7 +218,7 @@ fetch('galaxy_1000stars_ssz.json')
 Segment density represents the "segmentation" of spacetime:
 - **Ξ = 0:** Flat spacetime (far from mass)
 - **Ξ → 1:** Highly segmented (near horizon)
-- **Formula:** Ξ(r) = 1 - exp(-φ · r/r_s)
+- **Formula:** Ξ(r) = 1 - exp(-φ · r_s / r)
 
 ### **What is D_SSZ(r)?**
 

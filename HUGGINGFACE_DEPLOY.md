@@ -164,7 +164,7 @@ Interactive 3D Visualization of Segmented Spacetime Physics with Real GAIA DR3 D
 This tool implements the Segmented Spacetime (SSZ) framework with the golden ratio (φ = 1.618...) as a fundamental constant in spacetime geometry.
 
 **Scientific Background:**
-- Segment Density: Ξ(r) = 1 - exp(-φ·r/r_s)
+- Segment Density: Ξ(r) = 1 - exp(-φ·r_s / r)
 - Time Dilation: D_SSZ = 1/(1 + Ξ)
 - No singularities at event horizons
 

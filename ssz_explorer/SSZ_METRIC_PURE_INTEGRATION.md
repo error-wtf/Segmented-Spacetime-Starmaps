@@ -18,7 +18,7 @@ Die **ssz_physics_plots.py** nutzt jetzt **ssz-metric-pure** als mathematische G
 
 | Feature | PAPER-RESTORED | SSZ-METRIC-PURE |
 |---------|----------------|-----------------|
-| **Ξ(r) Formula** | `1 - α·exp[-(r/r_c)²]` | `1 - exp(-φ·r/r_s)` |
+| **Ξ(r) Formula** | `1 - α·exp[-(r/r_c)²]` | `1 - exp(-φ·r_s / r)` |
 | **Parameter** | α=0.12, r_c=1.9 pc | φ = Golden Ratio |
 | **Singularity** | Depends on α | **Always finite!** |
 | **Application** | G79, Nebulae | **All masses** |
@@ -31,7 +31,7 @@ Die **ssz_physics_plots.py** nutzt jetzt **ssz-metric-pure** als mathematische G
 
 ### **1. Segment Saturation (φ-based):**
 ```python
-Ξ(r) = 1 - exp(-φ · r/r_s)
+Ξ(r) = 1 - exp(-φ · r_s / r)
 
 where φ = (1 + √5)/2 ≈ 1.618 (Golden Ratio)
 ```
@@ -218,7 +218,7 @@ A_Ξ(r_s) ≈ 0.307
 
 **SSZ-METRIC-PURE (φ-exponential):**
 ```
-Ξ(r) = 1 - exp(-φ·r/r_s)
+Ξ(r) = 1 - exp(-φ·r_s / r)
 ```
 - No free parameters!
 - Universal for all masses

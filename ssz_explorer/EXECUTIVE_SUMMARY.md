@@ -159,7 +159,7 @@ Interactive3D_ROADMAP.md           # Original plan
 ```
 Core Theory:
   - Spacetime divided into "segments"
-  - Segment density: Ξ(r) = 1 - exp(-φ·r/r_s)
+  - Segment density: Ξ(r) = 1 - exp(-φ·r_s / r)
   - Golden ratio (φ) intrinsic to geometry
   - No singularities at event horizons
   
