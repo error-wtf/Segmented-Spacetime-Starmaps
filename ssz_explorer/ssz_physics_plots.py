@@ -197,6 +197,9 @@ def create_time_dilation_comparison_OLD_DEPRECATED():
     
     return fig
 
+# Alias for backward compatibility with test scripts
+create_time_dilation_comparison = create_time_dilation_comparison_OLD_DEPRECATED
+
 # ============================================================================
 # PLOT 3: PROPER TIME dτ/dt
 # ============================================================================
